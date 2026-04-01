@@ -63,55 +63,33 @@ tests/             JavaScript 테스트 (unit + e2e)
 
 ---
 
-## 설치 / Installation
-
-> **모든 명령은 프로젝트 루트에서 실행하세요.**  
-> All commands must be run from the project root directory.
-
-### 1. 레포 클론 / Clone the repository
+## 시작하기 / Quick Start
 
 ```bash
 git clone https://github.com/glukupikr0n/OCR-your-Greek-Latin.git
 cd OCR-your-Greek-Latin
+./scripts/install-mac.sh   # macOS
+# ./scripts/install-linux.sh  # Linux
+npm start
 ```
 
-### 2. 의존성 설치 / Install dependencies
+> `install-mac.sh` 한 번 실행으로 Homebrew · Tesseract · Poppler · Python 가상환경 · npm 패키지 · 언어팩(`grc`, `lat`) 설치가 모두 완료됩니다.
 
-#### macOS (자동 / One-line setup)
-
-```bash
-./scripts/install-mac.sh
-```
-
-Homebrew, Tesseract, Poppler, Python 3.11, Node.js를 설치하고  
-tessdata_best에서 `grc` / `lat` 언어팩을 자동으로 다운로드합니다.
-
-#### Linux — Debian/Ubuntu (자동 / One-line setup)
+<details>
+<summary>수동 설치 / Manual setup</summary>
 
 ```bash
-./scripts/install-linux.sh
-```
-
-#### 수동 설치 / Manual setup
-
-```bash
-# Python 가상환경 생성
+# Python 가상환경
 python3.11 -m venv python/.venv
 source python/.venv/bin/activate
 pip install -r python/requirements.txt
 deactivate
 
-# npm 패키지
+# npm
 npm install
 ```
 
----
-
-## 개발 모드 실행 / Development
-
-```bash
-npm start
-```
+</details>
 
 ---
 

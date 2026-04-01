@@ -49,5 +49,14 @@ contextBridge.exposeInMainWorld('ocrApp', {
     events.forEach((evt) => {
       ipcRenderer.on(evt, () => cb(evt))
     })
-  }
+  },
+
+  // Auto-update
+  checkForUpdate: () => ipcRenderer.invoke('update:check'),
+  downloadUpdate: () => ipcRenderer.invoke('update:download'),
+  installUpdate: () => ipcRenderer.invoke('update:install'),
+  onUpdateAvailable: (cb) => ipcRenderer.on('update:available', (_, data) => cb(data)),
+  onUpdateProgress: (cb) => ipcRenderer.on('update:progress', (_, data) => cb(data)),
+  onUpdateReady:    (cb) => ipcRenderer.on('update:ready',    ()       => cb()),
+  onUpdateNone:     (cb) => ipcRenderer.on('update:none',     ()       => cb()),
 })

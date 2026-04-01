@@ -6,6 +6,7 @@ const { WindowManager } = require('./window-manager')
 const { PythonManager } = require('./python-manager')
 const { IPCBridge } = require('./ipc-bridge')
 const { buildMenu } = require('./menu')
+const { setupAutoUpdater } = require('./auto-updater')
 
 let windowManager
 let pythonManager
@@ -46,6 +47,9 @@ app.whenReady().then(async () => {
   } catch (err) {
     win.webContents.send('system:error', { message: err.message })
   }
+
+  // Auto-updater
+  setupAutoUpdater(win)
 })
 
 app.on('window-all-closed', () => {
