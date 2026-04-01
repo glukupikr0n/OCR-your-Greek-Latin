@@ -47,10 +47,16 @@ class OCRHandler:
 
     def cancel(self, params: dict) -> dict:
         job_id = params.get('job_id', '')
-        if job_id in self._active_jobs:
+        if job_id and job_id in self._active_jobs:
             self._active_jobs[job_id] = True
             self._queue.cancel(job_id)
             return {'cancelled': True, 'job_id': job_id}
+        elif not job_id and self._active_jobs:
+            # Cancel all active jobs when no specific id is provided
+            for jid in list(self._active_jobs.keys()):
+                self._active_jobs[jid] = True
+                self._queue.cancel(jid)
+            return {'cancelled': True, 'job_id': 'all'}
         return {'cancelled': False, 'job_id': job_id}
 
     def _is_cancelled(self, job_id: str) -> bool:
@@ -202,7 +208,19 @@ class OCRHandler:
             splitter = BilingualSplitter()
             lang_a, lang_b = splitter.detect_alternating_languages(page_results)
             out_dir = os.path.dirname(output_path)
-            path_a, path_b = splitter.split(output_path, out_dir, lang_a, lang_b)
+            lang_a_name = options.get('split_lang_a', 'greek')
+            lang_b_name = options.get('split_lang_b', 'latin')
+            shared_start = options.get('split_shared_start')
+            shared_end = options.get('split_shared_end')
+            shared_range = None
+            if shared_start is not None and shared_end is not None:
+                shared_range = (int(shared_start) - 1, int(shared_end) - 1)  # convert 1-indexed UI to 0-indexed
+            path_a, path_b = splitter.split(
+                output_path, out_dir, lang_a, lang_b,
+                lang_a_name=lang_a_name,
+                lang_b_name=lang_b_name,
+                shared_range=shared_range
+            )
             split_files = [path_a, path_b]
 
         overall_conf = sum(pr.avg_confidence for pr in page_results) / max(len(page_results), 1)

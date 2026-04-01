@@ -17,16 +17,26 @@ class BilingualSplitter:
         lang_a_pages: list[int],
         lang_b_pages: list[int],
         lang_a_name: str = 'greek',
-        lang_b_name: str = 'latin'
+        lang_b_name: str = 'latin',
+        shared_range: tuple[int, int] | None = None
     ) -> tuple[str, str]:
         """
         Split a PDF into two files based on page indices.
+
+        shared_range: (start, end) inclusive 0-indexed page range whose pages
+        are included in BOTH output PDFs (e.g. title pages in a Loeb edition).
+
         Returns (path_lang_a, path_lang_b).
         """
         os.makedirs(output_dir, exist_ok=True)
         base = os.path.splitext(os.path.basename(pdf_path))[0]
         out_a = os.path.join(output_dir, f'{base}_{lang_a_name}.pdf')
         out_b = os.path.join(output_dir, f'{base}_{lang_b_name}.pdf')
+
+        if shared_range is not None:
+            shared = set(range(shared_range[0], shared_range[1] + 1))
+            lang_a_pages = sorted(set(lang_a_pages) | shared)
+            lang_b_pages = sorted(set(lang_b_pages) | shared)
 
         self._extract_pages(pdf_path, lang_a_pages, out_a)
         self._extract_pages(pdf_path, lang_b_pages, out_b)

@@ -46,6 +46,18 @@
         "from": "python",
         "to": "python",
         "filter": ["**/*", "!tests/**/*"]
+      },
+      {
+        "from": "dist-python/guru-backend",
+        "to": "guru-backend"
+      }
+    ],
+    "fileAssociations": [
+      {
+        "ext": "pdf",
+        "name": "PDF Document",
+        "description": "Open PDF with Guru OCR",
+        "role": "Viewer"
       }
     ],
     "mac": {

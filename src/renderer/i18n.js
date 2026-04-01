@@ -37,14 +37,16 @@ export const STRINGS = {
     'opt-toc': '목차 자동 감지',
     'opt-page-numbers': '페이지 번호 추출',
     'opt-split-bilingual': '이중 언어 PDF 분리',
-    'opt-split-lang-a': '언어 A 이름',
-    'opt-split-lang-b': '언어 B 이름',
+    'opt-split-lang-a': '언어 A',
+    'opt-split-lang-b': '언어 B',
+    'opt-split-shared': '공유 범위',
+    'opt-page-range': '처리 페이지 범위',
+    'opt-page-range-from': '시작',
     'opt-threads': '처리 스레드 수',
 
     // 버튼
     'btn-process': '파일 처리',
     'btn-cancel': '취소',
-    'btn-train': '모델 훈련…',
     'btn-open-output': '출력 PDF 열기',
 
     // 결과
@@ -53,19 +55,11 @@ export const STRINGS = {
     'stat-confidence': '평균 신뢰도',
     'stat-output': '저장 경로',
     'toc-title': '목차',
+    'log-title': '로그',
 
     // 미리보기
     'preview-placeholder': 'PDF를 열면 미리보기가 표시됩니다',
     'page-indicator': '페이지',
-
-    // 훈련 다이얼로그
-    'train-title': '커스텀 모델 훈련',
-    'train-gt-dir': 'Ground Truth 디렉토리',
-    'train-browse': '찾아보기…',
-    'train-base-lang': '기반 언어',
-    'train-model-name': '출력 모델 이름',
-    'train-start': '훈련 시작',
-    'train-close': '닫기',
 
     // 시스템
     'system-missing-langs': '누락된 Tesseract 언어팩: {langs}. install-mac.sh를 실행하세요.',
@@ -114,13 +108,15 @@ export const STRINGS = {
     'opt-toc': 'Detect Table of Contents',
     'opt-page-numbers': 'Extract page numbers',
     'opt-split-bilingual': 'Split bilingual PDF',
-    'opt-split-lang-a': 'Language A name',
-    'opt-split-lang-b': 'Language B name',
+    'opt-split-lang-a': 'Lang A',
+    'opt-split-lang-b': 'Lang B',
+    'opt-split-shared': 'Shared range',
+    'opt-page-range': 'OCR page range',
+    'opt-page-range-from': 'From',
     'opt-threads': 'Processing threads',
 
     'btn-process': 'Process File',
     'btn-cancel': 'Cancel',
-    'btn-train': 'Train Model…',
     'btn-open-output': 'Open Output PDF',
 
     'result-title': 'Results',
@@ -128,17 +124,10 @@ export const STRINGS = {
     'stat-confidence': 'Avg. confidence',
     'stat-output': 'Output path',
     'toc-title': 'Table of Contents',
+    'log-title': 'Log',
 
     'preview-placeholder': 'Open a PDF to see a preview',
     'page-indicator': 'Page',
-
-    'train-title': 'Train Custom Model',
-    'train-gt-dir': 'Ground Truth Directory',
-    'train-browse': 'Browse…',
-    'train-base-lang': 'Base Language',
-    'train-model-name': 'Output Model Name',
-    'train-start': 'Start Training',
-    'train-close': 'Close',
 
     'system-missing-langs': 'Missing Tesseract language data: {langs}. Run install-mac.sh.',
     'system-backend-error': 'Backend error: {msg}',

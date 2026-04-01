@@ -13,6 +13,7 @@ export class OptionsPanel {
       ['opt-upscale-on',        'sub-upscale'],
       ['opt-confidence-retry',  'sub-confidence'],
       ['opt-split-bilingual',   'sub-split'],
+      ['opt-page-range',        'sub-page-range'],
     ]
 
     for (const [checkId, subId] of pairs) {
@@ -59,6 +60,14 @@ export class OptionsPanel {
       splitBilingual: document.getElementById('opt-split-bilingual').checked,
       splitLangA: document.getElementById('opt-split-lang-a').value || 'greek',
       splitLangB: document.getElementById('opt-split-lang-b').value || 'latin',
+      splitSharedStart: document.getElementById('opt-split-shared-start').value
+        ? parseInt(document.getElementById('opt-split-shared-start').value, 10) : null,
+      splitSharedEnd: document.getElementById('opt-split-shared-end').value
+        ? parseInt(document.getElementById('opt-split-shared-end').value, 10) : null,
+      pageRangeEnabled: document.getElementById('opt-page-range').checked,
+      pageRangeStart: parseInt(document.getElementById('opt-page-range-start').value, 10) || 1,
+      pageRangeEnd: document.getElementById('opt-page-range-end').value
+        ? parseInt(document.getElementById('opt-page-range-end').value, 10) : null,
       threads: parseInt(document.getElementById('opt-threads').value, 10)
     }
   }

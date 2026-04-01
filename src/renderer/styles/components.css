@@ -162,6 +162,28 @@
   margin-bottom: 8px;
 }
 
+/* Log panel */
+#log-section {
+  margin-top: 12px;
+}
+
+#log-output {
+  max-height: 200px;
+  overflow-y: auto;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 6px 8px;
+  font-size: 10px;
+  font-family: 'Courier New', monospace;
+  line-height: 1.5;
+}
+
+.log-line { color: var(--text-muted); }
+.log-line.log-success { color: var(--success); }
+.log-line.log-warn { color: var(--warning); }
+.log-line.log-error { color: var(--danger); }
+
 /* Scrollbar styling */
 ::-webkit-scrollbar {
   width: 6px;

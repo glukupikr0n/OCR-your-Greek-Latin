@@ -9,12 +9,15 @@ class WindowManager {
   }
 
   createMainWindow () {
+    const isMac = process.platform === 'darwin'
     this._mainWindow = new BrowserWindow({
       width: 1200,
       height: 800,
       minWidth: 900,
       minHeight: 600,
-      title: 'OCR Your Greek Latin',
+      title: 'Guru',
+      titleBarStyle: isMac ? 'hiddenInset' : 'default',
+      trafficLightPosition: isMac ? { x: 12, y: 10 } : undefined,
       webPreferences: {
         preload: path.join(__dirname, '../preload/preload.js'),
         contextIsolation: true,

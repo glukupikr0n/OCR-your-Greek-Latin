@@ -19,6 +19,20 @@ const tocPanel      = new TOCPanel()
 // Apply Korean as default language
 applyI18n()
 
+// Log helpers
+function appendLog (msg, level = 'info') {
+  const el = document.getElementById('log-output')
+  if (!el) return
+  const line = document.createElement('div')
+  line.className = `log-line log-${level}`
+  const ts = new Date().toLocaleTimeString()
+  line.textContent = `[${ts}] ${msg}`
+  el.appendChild(line)
+  el.scrollTop = el.scrollHeight
+}
+
+let _currentJobId = null
+
 // Language toggle
 document.getElementById('btn-lang-toggle').addEventListener('click', () => {
   const next = getLang() === 'ko' ? 'en' : 'ko'
@@ -47,18 +61,28 @@ document.getElementById('btn-process').addEventListener('click', async () => {
   if (!outputPath) return
 
   const options = optionsPanel.getOptions()
+  _currentJobId = crypto.randomUUID()
 
   document.getElementById('btn-process').classList.add('hidden')
   document.getElementById('btn-cancel').classList.remove('hidden')
   progressPanel.start(previewPanel.totalPages)
+  appendLog(`Processing started (job ${_currentJobId.slice(0, 8)}…)`)
 
-  const progressHandler = (data) => progressPanel.update(data)
+  const progressHandler = (data) => {
+    progressPanel.update(data)
+    appendLog(`Page ${data.page + 1}/${data.total_pages} — confidence ${data.current_word_confidence?.toFixed(1)}%`)
+  }
   app.onProgress(progressHandler)
 
   try {
+    const pageRange = options.pageRangeEnabled
+      ? [options.pageRangeStart - 1, options.pageRangeEnd != null ? options.pageRangeEnd - 1 : null]
+      : [0, null]
+
     const result = await app.processFile({
       input_path: filePath,
       output_path: outputPath,
+      job_id: _currentJobId,
       languages: options.languages,
       options: {
         enhancement: options.enhancement,
@@ -70,18 +94,28 @@ document.getElementById('btn-process').addEventListener('click', async () => {
         split_bilingual: options.splitBilingual,
         split_lang_a: options.splitLangA,
         split_lang_b: options.splitLangB,
+        split_shared_start: options.splitSharedStart,
+        split_shared_end: options.splitSharedEnd,
+        page_range: pageRange,
         parallel_threads: options.threads
       }
     })
 
-    progressPanel.finish(result)
-    showResults(result)
-    if (result.toc_entries?.length > 0) tocPanel.render(result.toc_entries)
+    if (result.status === 'cancelled') {
+      appendLog('Processing cancelled.', 'warn')
+    } else {
+      appendLog(`Done — ${result.pages_processed} pages, avg confidence ${result.avg_confidence?.toFixed(1)}%`, 'success')
+      progressPanel.finish(result)
+      showResults(result)
+      if (result.toc_entries?.length > 0) tocPanel.render(result.toc_entries)
+    }
 
   } catch (err) {
     progressPanel.showError(err.message)
+    appendLog(`Error: ${err.message}`, 'error')
   } finally {
     app.offProgress(progressHandler)
+    _currentJobId = null
     document.getElementById('btn-cancel').classList.add('hidden')
     document.getElementById('btn-process').classList.remove('hidden')
   }
@@ -89,50 +123,9 @@ document.getElementById('btn-process').addEventListener('click', async () => {
 
 // Cancel
 document.getElementById('btn-cancel').addEventListener('click', async () => {
-  await app.cancelJob({})
+  appendLog('Cancel requested…', 'warn')
+  await app.cancelJob({ job_id: _currentJobId })
   progressPanel.showCancelled()
-  document.getElementById('btn-cancel').classList.add('hidden')
-  document.getElementById('btn-process').classList.remove('hidden')
-})
-
-// Train dialog
-document.getElementById('btn-train').addEventListener('click', () => {
-  document.getElementById('train-dialog').classList.remove('hidden')
-})
-document.getElementById('btn-train-close').addEventListener('click', () => {
-  document.getElementById('train-dialog').classList.add('hidden')
-})
-document.getElementById('btn-select-gt-dir').addEventListener('click', async () => {
-  const path = await app.openFileDialog()
-  if (path) document.getElementById('train-gt-dir').value = path
-})
-document.getElementById('btn-train-start').addEventListener('click', async () => {
-  const gtDir = document.getElementById('train-gt-dir').value
-  if (!gtDir) { alert('Ground truth 디렉토리를 선택하세요.'); return }
-
-  const wrap = document.getElementById('train-progress-wrap')
-  const bar  = document.getElementById('train-progress-bar')
-  const txt  = document.getElementById('train-progress-text')
-  wrap.classList.remove('hidden')
-
-  const handler = (data) => {
-    bar.style.width = `${data.pct}%`
-    txt.textContent = data.message
-  }
-  app.onTrainProgress(handler)
-
-  try {
-    const result = await app.trainModel({
-      ground_truth_dir: gtDir,
-      base_lang: document.getElementById('train-base-lang').value,
-      output_model_name: document.getElementById('train-model-name').value
-    })
-    txt.textContent = `완료: ${result.output_path}`
-  } catch (err) {
-    txt.textContent = `오류: ${err.message}`
-  } finally {
-    app.offTrainProgress(handler)
-  }
 })
 
 // Menu commands
@@ -140,7 +133,6 @@ app.onMenuCommand((cmd) => {
   if (cmd === 'menu:open-file') filePanel.onSelectFile()
   if (cmd === 'menu:process')   document.getElementById('btn-process').click()
   if (cmd === 'menu:cancel')    document.getElementById('btn-cancel').click()
-  if (cmd === 'menu:train')     document.getElementById('btn-train').click()
 })
 
 // System ready / error
@@ -148,10 +140,14 @@ app.onSystemReady((info) => {
   if (!info.ready) {
     const missing = info.languages?.missing?.join(', ') || ''
     showBanner(t('system-missing-langs', { langs: missing }), 'warning')
+    appendLog(`Warning: missing language data — ${missing}`, 'warn')
+  } else {
+    appendLog('Backend ready.', 'success')
   }
 })
 app.onSystemError((data) => {
   showBanner(t('system-backend-error', { msg: data.message }), 'error')
+  appendLog(`Backend error: ${data.message}`, 'error')
 })
 
 // Auto-update

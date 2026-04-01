@@ -121,10 +121,24 @@
             <div class="opt-item">
               <label><input type="checkbox" id="opt-split-bilingual"> <span data-i18n="opt-split-bilingual">이중 언어 PDF 분리</span></label>
               <div class="opt-sub hidden" id="sub-split">
-                <span data-i18n="opt-split-lang-a">언어 A 이름</span>
+                <span data-i18n="opt-split-lang-a">언어 A</span>
                 <input type="text" id="opt-split-lang-a" value="greek">
-                <span data-i18n="opt-split-lang-b">언어 B 이름</span>
+                <span data-i18n="opt-split-lang-b">언어 B</span>
                 <input type="text" id="opt-split-lang-b" value="latin">
+                <span data-i18n="opt-split-shared">공유 범위</span>
+                <input type="number" id="opt-split-shared-start" min="1" placeholder="1" style="width:46px">
+                <span>–</span>
+                <input type="number" id="opt-split-shared-end" min="1" placeholder="끝" style="width:46px">
+              </div>
+            </div>
+
+            <div class="opt-item">
+              <label><input type="checkbox" id="opt-page-range"> <span data-i18n="opt-page-range">처리 페이지 범위</span></label>
+              <div class="opt-sub hidden" id="sub-page-range">
+                <span data-i18n="opt-page-range-from">시작</span>
+                <input type="number" id="opt-page-range-start" min="1" value="1" style="width:50px">
+                <span>–</span>
+                <input type="number" id="opt-page-range-end" min="1" placeholder="끝" style="width:50px">
               </div>
             </div>
 
@@ -145,7 +159,6 @@
         <div id="action-buttons">
           <button id="btn-process" class="btn btn-success" disabled data-i18n="btn-process">파일 처리</button>
           <button id="btn-cancel" class="btn btn-danger hidden" data-i18n="btn-cancel">취소</button>
-          <button id="btn-train" class="btn btn-secondary" data-i18n="btn-train">모델 훈련…</button>
         </div>
       </aside>
 
@@ -196,41 +209,12 @@
           <h3 data-i18n="toc-title">목차</h3>
           <ul id="toc-list" class="toc-list"></ul>
         </div>
-      </aside>
-    </div>
-  </div>
 
-  <!-- Training dialog -->
-  <div id="train-dialog" class="dialog-overlay hidden">
-    <div class="dialog">
-      <h2 data-i18n="train-title">커스텀 모델 훈련</h2>
-      <div class="form-group">
-        <label for="train-gt-dir" data-i18n="train-gt-dir">Ground Truth 디렉토리</label>
-        <div class="input-row">
-          <input type="text" id="train-gt-dir" readonly>
-          <button id="btn-select-gt-dir" class="btn btn-secondary" data-i18n="train-browse">찾아보기…</button>
+        <div id="log-section">
+          <h3 data-i18n="log-title">로그</h3>
+          <div id="log-output"></div>
         </div>
-      </div>
-      <div class="form-group">
-        <label for="train-base-lang" data-i18n="train-base-lang">기반 언어</label>
-        <select id="train-base-lang">
-          <option value="grc">Ancient Greek (grc)</option>
-          <option value="lat">Latin (lat)</option>
-          <option value="eng">English (eng)</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label for="train-model-name" data-i18n="train-model-name">출력 모델 이름</label>
-        <input type="text" id="train-model-name" value="grc_custom">
-      </div>
-      <div id="train-progress-wrap" class="hidden">
-        <div id="train-progress-bar-wrap"><div id="train-progress-bar"></div></div>
-        <div id="train-progress-text"></div>
-      </div>
-      <div class="dialog-actions">
-        <button id="btn-train-start" class="btn btn-success" data-i18n="train-start">훈련 시작</button>
-        <button id="btn-train-close" class="btn btn-secondary" data-i18n="train-close">닫기</button>
-      </div>
+      </aside>
     </div>
   </div>
 
