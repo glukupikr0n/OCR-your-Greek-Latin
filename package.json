@@ -1,0 +1,79 @@
+{
+  "name": "ocr-your-greek-latin",
+  "version": "1.0.0",
+  "description": "Desktop OCR for Ancient Greek and Latin manuscripts",
+  "main": "src/main/main.js",
+  "scripts": {
+    "start": "electron .",
+    "dev": "NODE_ENV=development electron .",
+    "build": "electron-builder",
+    "build:mac": "electron-builder --mac",
+    "build:linux": "electron-builder --linux",
+    "build:win": "electron-builder --win",
+    "test": "jest tests/unit",
+    "test:e2e": "playwright test tests/e2e"
+  },
+  "dependencies": {
+    "electron": "^33.0.0",
+    "uuid": "^9.0.0"
+  },
+  "devDependencies": {
+    "electron-builder": "^24.0.0",
+    "@playwright/test": "^1.40.0",
+    "jest": "^29.0.0",
+    "eslint": "^8.0.0"
+  },
+  "build": {
+    "appId": "com.ocr-greek-latin.app",
+    "productName": "OCR Your Greek Latin",
+    "copyright": "Copyright © 2026",
+    "directories": {
+      "output": "dist",
+      "buildResources": "assets"
+    },
+    "files": [
+      "src/**/*",
+      "python/**/*",
+      "assets/**/*",
+      "!python/tests/**/*",
+      "!**/__pycache__/**/*",
+      "!**/*.pyc"
+    ],
+    "extraResources": [
+      {
+        "from": "python",
+        "to": "python",
+        "filter": ["**/*", "!tests/**/*"]
+      }
+    ],
+    "mac": {
+      "target": [
+        { "target": "dmg", "arch": ["x64", "arm64"] }
+      ],
+      "icon": "assets/icon.icns",
+      "category": "public.app-category.productivity",
+      "hardenedRuntime": true,
+      "gatekeeperAssess": false,
+      "entitlements": "build/entitlements.mac.plist",
+      "entitlementsInherit": "build/entitlements.mac.plist"
+    },
+    "dmg": {
+      "title": "OCR Your Greek Latin",
+      "icon": "assets/icon.icns",
+      "contents": [
+        { "x": 130, "y": 220, "type": "file" },
+        { "x": 410, "y": 220, "type": "link", "path": "/Applications" }
+      ],
+      "window": { "width": 540, "height": 380 }
+    },
+    "linux": {
+      "target": ["AppImage", "deb"],
+      "icon": "assets/icon.png",
+      "category": "Office"
+    },
+    "win": {
+      "target": ["nsis"],
+      "icon": "assets/icon.ico"
+    }
+  }
+}

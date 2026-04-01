@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy"
+    content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:">
+  <title>OCR Your Greek Latin</title>
+  <link rel="stylesheet" href="styles/main.css">
+  <link rel="stylesheet" href="styles/components.css">
+</head>
+<body>
+  <div id="app">
+    <!-- System status banner -->
+    <div id="status-banner" class="hidden"></div>
+
+    <div id="main-layout">
+      <!-- Left panel: file + options -->
+      <aside id="left-panel">
+        <section id="file-section">
+          <div id="drop-zone" class="drop-zone">
+            <p class="drop-hint">Drop a PDF or image here</p>
+            <p class="drop-hint-sub">or</p>
+            <button id="btn-open-file" class="btn btn-primary">Open File…</button>
+          </div>
+          <div id="file-info" class="hidden">
+            <div class="file-name" id="file-name-display"></div>
+            <div class="file-meta" id="file-meta-display"></div>
+          </div>
+        </section>
+
+        <section id="options-section">
+          <h3>Languages</h3>
+          <div class="checkbox-group">
+            <label><input type="checkbox" id="lang-grc" value="grc" checked> Ancient Greek</label>
+            <label><input type="checkbox" id="lang-lat" value="lat" checked> Latin</label>
+            <label><input type="checkbox" id="lang-eng" value="eng" checked> English</label>
+          </div>
+
+          <h3>Image Enhancement</h3>
+          <div class="checkbox-group">
+            <label><input type="checkbox" id="opt-deskew" checked> Deskew (2-pass)</label>
+            <label><input type="checkbox" id="opt-grayscale" checked> Grayscale</label>
+            <label><input type="checkbox" id="opt-bw"> Convert to B&amp;W</label>
+            <label><input type="checkbox" id="opt-denoise" checked> Denoise</label>
+            <label><input type="checkbox" id="opt-autocontrast" checked> Auto Contrast</label>
+          </div>
+
+          <div class="option-row">
+            <label for="opt-upscale">Upscale:</label>
+            <select id="opt-upscale">
+              <option value="1">None (1×)</option>
+              <option value="2">2×</option>
+              <option value="3">3×</option>
+              <option value="4">4× (Lanczos)</option>
+            </select>
+          </div>
+
+          <h3>OCR Options</h3>
+          <div class="checkbox-group">
+            <label><input type="checkbox" id="opt-layout" checked> Layout detection</label>
+            <label><input type="checkbox" id="opt-confidence-retry" checked> Smart confidence retry</label>
+            <label><input type="checkbox" id="opt-toc" checked> Detect Table of Contents</label>
+            <label><input type="checkbox" id="opt-page-numbers" checked> Extract page numbers</label>
+            <label><input type="checkbox" id="opt-split-bilingual"> Split bilingual PDF</label>
+          </div>
+
+          <div class="option-row">
+            <label for="opt-confidence-threshold">Confidence threshold:</label>
+            <input type="number" id="opt-confidence-threshold" min="0" max="100" value="60" step="5">
+          </div>
+
+          <div class="option-row">
+            <label for="opt-threads">Threads:</label>
+            <select id="opt-threads">
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="4" selected>4</option>
+            </select>
+          </div>
+        </section>
+
+        <div id="action-buttons">
+          <button id="btn-process" class="btn btn-success" disabled>Process File</button>
+          <button id="btn-cancel" class="btn btn-danger hidden">Cancel</button>
+          <button id="btn-train" class="btn btn-secondary">Train Model…</button>
+        </div>
+      </aside>
+
+      <!-- Center panel: preview + progress -->
+      <main id="center-panel">
+        <div id="preview-container">
+          <div id="page-nav" class="hidden">
+            <button id="btn-prev-page" class="btn btn-icon">◀</button>
+            <span id="page-indicator">Page 1 / 1</span>
+            <button id="btn-next-page" class="btn btn-icon">▶</button>
+          </div>
+          <canvas id="preview-canvas"></canvas>
+          <div id="preview-placeholder">
+            <p>Open a PDF to see a preview</p>
+          </div>
+        </div>
+
+        <div id="progress-container" class="hidden">
+          <div id="progress-bar-wrap">
+            <div id="progress-bar"></div>
+          </div>
+          <div id="progress-text">Ready</div>
+          <div id="progress-confidence"></div>
+        </div>
+      </main>
+
+      <!-- Right panel: results -->
+      <aside id="right-panel">
+        <div id="result-section" class="hidden">
+          <h3>Results</h3>
+          <div class="result-stat">
+            <span class="stat-label">Pages processed:</span>
+            <span id="stat-pages" class="stat-value">—</span>
+          </div>
+          <div class="result-stat">
+            <span class="stat-label">Avg. confidence:</span>
+            <span id="stat-confidence" class="stat-value">—</span>
+          </div>
+          <div class="result-stat">
+            <span class="stat-label">Output:</span>
+            <span id="stat-output" class="stat-value stat-path">—</span>
+          </div>
+          <button id="btn-open-output" class="btn btn-primary hidden">Open Output PDF</button>
+        </div>
+
+        <div id="toc-section" class="hidden">
+          <h3>Table of Contents</h3>
+          <ul id="toc-list" class="toc-list"></ul>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <!-- Training dialog -->
+  <div id="train-dialog" class="dialog-overlay hidden">
+    <div class="dialog">
+      <h2>Train Custom Model</h2>
+      <div class="form-group">
+        <label for="train-gt-dir">Ground Truth Directory:</label>
+        <div class="input-row">
+          <input type="text" id="train-gt-dir" placeholder="/path/to/ground_truth" readonly>
+          <button id="btn-select-gt-dir" class="btn btn-secondary">Browse…</button>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="train-base-lang">Base Language:</label>
+        <select id="train-base-lang">
+          <option value="grc">Ancient Greek (grc)</option>
+          <option value="lat">Latin (lat)</option>
+          <option value="eng">English (eng)</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="train-model-name">Output Model Name:</label>
+        <input type="text" id="train-model-name" value="grc_custom" placeholder="my_custom_model">
+      </div>
+      <div id="train-progress-wrap" class="hidden">
+        <div id="train-progress-bar-wrap">
+          <div id="train-progress-bar"></div>
+        </div>
+        <div id="train-progress-text"></div>
+      </div>
+      <div class="dialog-actions">
+        <button id="btn-train-start" class="btn btn-success">Start Training</button>
+        <button id="btn-train-close" class="btn btn-secondary">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="renderer.js"></script>
+</body>
+</html>
