@@ -1,0 +1,12 @@
+node_modules/
+dist/
+.DS_Store
+*.pyc
+__pycache__/
+python/.venv/
+python/tests/__pycache__/
+*.egg-info/
+.pytest_cache/
+coverage/
+.nyc_output/
+assets/icon.icns

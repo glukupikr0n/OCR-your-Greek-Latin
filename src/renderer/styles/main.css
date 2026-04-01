@@ -1,0 +1,344 @@
+:root {
+  --bg: #1e1e2e;
+  --surface: #27273a;
+  --surface2: #313145;
+  --border: #44445a;
+  --text: #cdd6f4;
+  --text-muted: #9399b2;
+  --accent: #89b4fa;
+  --success: #a6e3a1;
+  --danger: #f38ba8;
+  --warning: #f9e2af;
+  --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --radius: 6px;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 13px;
+  overflow: hidden;
+}
+
+#app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+/* Status banner */
+#status-banner {
+  padding: 6px 16px;
+  font-size: 12px;
+  background: var(--warning);
+  color: #1e1e2e;
+  text-align: center;
+}
+
+#status-banner.error {
+  background: var(--danger);
+}
+
+#status-banner.hidden {
+  display: none;
+}
+
+/* Main layout: three-panel */
+#main-layout {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* Panels */
+#left-panel {
+  width: 260px;
+  min-width: 220px;
+  max-width: 320px;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  padding: 12px;
+  gap: 12px;
+}
+
+#center-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--bg);
+}
+
+#right-panel {
+  width: 220px;
+  min-width: 180px;
+  background: var(--surface);
+  border-left: 1px solid var(--border);
+  overflow-y: auto;
+  padding: 12px;
+}
+
+/* Sections */
+section {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px;
+}
+
+section h3 {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 14px;
+  border: none;
+  border-radius: var(--radius);
+  font-family: var(--font);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.btn-primary { background: var(--accent); color: #1e1e2e; }
+.btn-success { background: var(--success); color: #1e1e2e; }
+.btn-danger  { background: var(--danger);  color: #1e1e2e; }
+.btn-secondary {
+  background: var(--surface2);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+.btn-icon {
+  background: var(--surface2);
+  color: var(--text);
+  padding: 4px 10px;
+  border: 1px solid var(--border);
+}
+
+.hidden { display: none !important; }
+
+/* Action buttons at bottom of left panel */
+#action-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: auto;
+}
+
+#action-buttons .btn {
+  width: 100%;
+}
+
+/* Preview area */
+#preview-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: auto;
+  padding: 12px;
+  position: relative;
+}
+
+#page-nav {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+#preview-canvas {
+  max-width: 100%;
+  max-height: calc(100vh - 180px);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  display: block;
+}
+
+#preview-placeholder {
+  color: var(--text-muted);
+  text-align: center;
+}
+
+/* Progress */
+#progress-container {
+  padding: 12px 20px;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+}
+
+#progress-bar-wrap {
+  height: 6px;
+  background: var(--surface2);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 6px;
+}
+
+#progress-bar {
+  height: 100%;
+  background: var(--accent);
+  width: 0%;
+  transition: width 0.3s ease;
+  border-radius: 3px;
+}
+
+#progress-text {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+#progress-confidence {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+/* Result section */
+.result-stat {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 4px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 12px;
+}
+
+.stat-label { color: var(--text-muted); }
+.stat-value { font-weight: 500; }
+.stat-path {
+  font-size: 10px;
+  word-break: break-all;
+  text-align: right;
+}
+
+/* TOC */
+.toc-list {
+  list-style: none;
+  margin-top: 8px;
+}
+
+.toc-list li {
+  padding: 3px 0;
+  font-size: 11px;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+}
+
+.toc-list li:hover { color: var(--accent); }
+
+.toc-list li.level-1 { padding-left: 0; font-weight: 600; }
+.toc-list li.level-2 { padding-left: 12px; }
+.toc-list li.level-3 { padding-left: 24px; }
+
+/* Dialog */
+.dialog-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.dialog {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+  width: 420px;
+  max-width: 90vw;
+}
+
+.dialog h2 {
+  font-size: 16px;
+  margin-bottom: 16px;
+}
+
+.form-group {
+  margin-bottom: 12px;
+}
+
+.form-group label {
+  display: block;
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+
+.form-group input[type="text"],
+.form-group select {
+  width: 100%;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  padding: 6px 8px;
+  font-size: 12px;
+  font-family: var(--font);
+}
+
+.input-row {
+  display: flex;
+  gap: 6px;
+}
+
+.input-row input { flex: 1; }
+
+.dialog-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+  justify-content: flex-end;
+}
+
+#train-progress-bar-wrap {
+  height: 6px;
+  background: var(--surface2);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 6px;
+}
+
+#train-progress-bar {
+  height: 100%;
+  background: var(--success);
+  width: 0%;
+  transition: width 0.3s ease;
+}
+
+#train-progress-text {
+  font-size: 11px;
+  color: var(--text-muted);
+}
