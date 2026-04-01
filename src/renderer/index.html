@@ -101,6 +101,40 @@
 
           </div>
 
+          <!-- Zone / Layout -->
+          <h3 data-i18n="sec-zones">레이아웃 존</h3>
+          <div class="checkbox-group">
+            <div class="option-row">
+              <label data-i18n="opt-zone-preset">존 프리셋</label>
+              <select id="opt-zone-preset">
+                <option value="" data-i18n="zone-auto">자동</option>
+                <option value="full_page" data-i18n="zone-full">전체 페이지</option>
+                <option value="body_only" data-i18n="zone-body">본문만</option>
+                <option value="left_margin" data-i18n="zone-left-margin">왼쪽 여백</option>
+                <option value="right_margin" data-i18n="zone-right-margin">오른쪽 여백</option>
+                <option value="both_margins" data-i18n="zone-both-margins">양쪽 여백</option>
+                <option value="auto_detect" data-i18n="zone-auto-detect">블록 자동 감지</option>
+              </select>
+            </div>
+            <div class="opt-item">
+              <label><input type="checkbox" id="opt-custom-margins"> <span data-i18n="opt-custom-margins">여백 설정</span></label>
+              <div class="opt-sub hidden" id="sub-margins">
+                <span data-i18n="margin-top">위 %</span>
+                <input type="number" id="margin-top" min="0" max="30" value="5" style="width:36px">
+                <span data-i18n="margin-bottom">아래</span>
+                <input type="number" id="margin-bottom" min="0" max="30" value="5" style="width:36px">
+                <span data-i18n="margin-left">왼쪽</span>
+                <input type="number" id="margin-left" min="0" max="30" value="7" style="width:36px">
+                <span data-i18n="margin-right">오른쪽</span>
+                <input type="number" id="margin-right" min="0" max="30" value="7" style="width:36px">
+              </div>
+            </div>
+            <div class="option-row">
+              <label><input type="checkbox" id="opt-custom-zones"> <span data-i18n="opt-custom-zones">커스텀 존 편집</span></label>
+              <button id="btn-clear-zones" class="btn btn-icon btn-sm" data-i18n="btn-clear-zones">초기화</button>
+            </div>
+          </div>
+
           <!-- OCR Options -->
           <h3 data-i18n="sec-ocr">OCR 옵션</h3>
           <div class="checkbox-group">
@@ -159,6 +193,7 @@
         <div id="action-buttons">
           <button id="btn-process" class="btn btn-success" disabled data-i18n="btn-process">파일 처리</button>
           <button id="btn-cancel" class="btn btn-danger hidden" data-i18n="btn-cancel">취소</button>
+          <button id="btn-download-data" class="btn btn-secondary" data-i18n="btn-download-data">데이터 다운로드…</button>
         </div>
       </aside>
 
@@ -170,7 +205,10 @@
             <span id="page-indicator"></span>
             <button id="btn-next-page" class="btn btn-icon">▶</button>
           </div>
-          <canvas id="preview-canvas" class="hidden"></canvas>
+          <div id="preview-canvas-wrap">
+            <canvas id="preview-canvas" class="hidden"></canvas>
+            <div id="zone-overlay"></div>
+          </div>
           <div id="preview-placeholder">
             <div class="placeholder-icon">Γ</div>
             <p data-i18n="preview-placeholder">PDF를 열면 미리보기가 표시됩니다</p>
@@ -210,11 +248,63 @@
           <ul id="toc-list" class="toc-list"></ul>
         </div>
 
+        <div id="manual-toc-section">
+          <h3 data-i18n="manual-toc-title">수동 목차 항목</h3>
+          <div id="manual-toc-list"></div>
+          <div class="manual-toc-add">
+            <input type="text" id="toc-add-title" placeholder="제목" style="width:100%;margin-bottom:4px">
+            <div style="display:flex;gap:4px">
+              <input type="number" id="toc-add-page" min="1" placeholder="페이지" style="width:55px">
+              <select id="toc-add-level" style="flex:1">
+                <option value="1" data-i18n="toc-level-chapter">챕터</option>
+                <option value="2" data-i18n="toc-level-section">섹션</option>
+                <option value="3" data-i18n="toc-level-subsection">소섹션</option>
+              </select>
+              <button id="btn-toc-add" class="btn btn-primary btn-sm" data-i18n="toc-add-btn">+</button>
+            </div>
+          </div>
+        </div>
+
         <div id="log-section">
           <h3 data-i18n="log-title">로그</h3>
           <div id="log-output"></div>
         </div>
       </aside>
+    </div>
+  </div>
+
+  <!-- Data Download dialog -->
+  <div id="data-dialog" class="dialog-overlay hidden">
+    <div class="dialog">
+      <h2 data-i18n="data-dialog-title">OCR 데이터 다운로드</h2>
+      <p class="form-group" style="font-size:11px;color:var(--text-muted)" data-i18n="data-dialog-desc">
+        tessdata_best 및 검증된 그리스어/라틴어 코퍼스를 다운로드합니다.
+      </p>
+      <div class="form-group">
+        <label data-i18n="data-tessdata-label">Tesseract 언어 데이터</label>
+        <div class="checkbox-group">
+          <label><input type="checkbox" id="dl-grc" checked> Ancient Greek (grc)</label>
+          <label><input type="checkbox" id="dl-lat" checked> Latin (lat)</label>
+          <label><input type="checkbox" id="dl-eng"> English (eng)</label>
+        </div>
+      </div>
+      <div class="form-group">
+        <label data-i18n="data-corpus-label">코퍼스 (참고용)</label>
+        <div class="checkbox-group">
+          <label><input type="checkbox" id="dl-lace"> LACE Greek OCR Corrections</label>
+          <label><input type="checkbox" id="dl-ogl"> OpenGreekAndLatin TEI corpus</label>
+        </div>
+      </div>
+      <div id="data-progress-wrap" class="hidden">
+        <div id="data-progress-bar-wrap" style="height:6px;background:var(--surface2);border-radius:3px;overflow:hidden;margin-bottom:6px">
+          <div id="data-progress-bar" style="height:100%;background:var(--accent);width:0%;transition:width 0.3s ease"></div>
+        </div>
+        <div id="data-progress-text" style="font-size:11px;color:var(--text-muted)"></div>
+      </div>
+      <div class="dialog-actions">
+        <button id="btn-data-start" class="btn btn-success" data-i18n="data-start-btn">다운로드 시작</button>
+        <button id="btn-data-close" class="btn btn-secondary" data-i18n="data-close-btn">닫기</button>
+      </div>
     </div>
   </div>
 

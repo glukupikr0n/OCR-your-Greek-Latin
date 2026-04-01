@@ -30,7 +30,26 @@ export const STRINGS = {
     'opt-upscale-sub': '배율',
     'upscale-none': '없음 (1×)',
 
+    // 존 / 레이아웃
+    'sec-zones': '레이아웃 존',
+    'opt-zone-preset': '존 프리셋',
+    'zone-auto': '자동 감지',
+    'zone-full': '전체 페이지',
+    'zone-body': '본문만',
+    'zone-left-margin': '왼쪽 여백',
+    'zone-right-margin': '오른쪽 여백',
+    'zone-both-margins': '양쪽 여백',
+    'zone-auto-detect': '블록 자동 감지',
+    'opt-custom-margins': '여백 설정',
+    'margin-top': '위 %',
+    'margin-bottom': '아래',
+    'margin-left': '왼쪽',
+    'margin-right': '오른쪽',
+    'opt-custom-zones': '커스텀 존 편집',
+    'btn-clear-zones': '초기화',
+
     // OCR 옵션
+    'sec-ocr': 'OCR 옵션',
     'opt-layout': '레이아웃 감지 (단/복칸)',
     'opt-confidence-retry': '스마트 재시도',
     'opt-confidence-sub': '신뢰도 임계값 (%)',
@@ -48,6 +67,22 @@ export const STRINGS = {
     'btn-process': '파일 처리',
     'btn-cancel': '취소',
     'btn-open-output': '출력 PDF 열기',
+    'btn-download-data': '데이터 다운로드…',
+
+    // 데이터 다운로드
+    'data-dialog-title': 'OCR 데이터 다운로드',
+    'data-dialog-desc': 'tessdata_best 및 검증된 그리스어/라틴어 코퍼스를 다운로드합니다.',
+    'data-tessdata-label': 'Tesseract 언어 데이터',
+    'data-corpus-label': '코퍼스 (참고용)',
+    'data-start-btn': '다운로드 시작',
+    'data-close-btn': '닫기',
+
+    // 수동 목차
+    'manual-toc-title': '수동 목차 항목',
+    'toc-level-chapter': '챕터',
+    'toc-level-section': '섹션',
+    'toc-level-subsection': '소섹션',
+    'toc-add-btn': '+',
 
     // 결과
     'result-title': '처리 결과',
@@ -107,6 +142,24 @@ export const STRINGS = {
     'opt-confidence-sub': 'Confidence threshold (%)',
     'opt-toc': 'Detect Table of Contents',
     'opt-page-numbers': 'Extract page numbers',
+    // Zones
+    'sec-zones': 'Layout Zones',
+    'opt-zone-preset': 'Zone preset',
+    'zone-auto': 'Auto',
+    'zone-full': 'Full Page',
+    'zone-body': 'Body Only',
+    'zone-left-margin': 'Left Margin',
+    'zone-right-margin': 'Right Margin',
+    'zone-both-margins': 'Both Margins',
+    'zone-auto-detect': 'Auto-detect blocks',
+    'opt-custom-margins': 'Margin settings',
+    'margin-top': 'Top %',
+    'margin-bottom': 'Bottom',
+    'margin-left': 'Left',
+    'margin-right': 'Right',
+    'opt-custom-zones': 'Custom zone editor',
+    'btn-clear-zones': 'Clear',
+
     'opt-split-bilingual': 'Split bilingual PDF',
     'opt-split-lang-a': 'Lang A',
     'opt-split-lang-b': 'Lang B',
@@ -118,6 +171,20 @@ export const STRINGS = {
     'btn-process': 'Process File',
     'btn-cancel': 'Cancel',
     'btn-open-output': 'Open Output PDF',
+    'btn-download-data': 'Download Data…',
+
+    'data-dialog-title': 'Download OCR Data',
+    'data-dialog-desc': 'Download tessdata_best models and verified Greek/Latin corpora.',
+    'data-tessdata-label': 'Tesseract Language Data',
+    'data-corpus-label': 'Corpus (reference)',
+    'data-start-btn': 'Start Download',
+    'data-close-btn': 'Close',
+
+    'manual-toc-title': 'Manual TOC Entries',
+    'toc-level-chapter': 'Chapter',
+    'toc-level-section': 'Section',
+    'toc-level-subsection': 'Subsection',
+    'toc-add-btn': '+',
 
     'result-title': 'Results',
     'stat-pages': 'Pages processed',

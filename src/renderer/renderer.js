@@ -5,6 +5,7 @@ import { OptionsPanel } from './components/options-panel.js'
 import { ProgressPanel } from './components/progress-panel.js'
 import { PreviewPanel } from './components/preview-panel.js'
 import { TOCPanel } from './components/toc-panel.js'
+import { ZoneEditor } from './components/zone-editor.js'
 import { t, setLang, getLang, applyI18n } from './i18n.js'
 
 const app = window.ocrApp
@@ -15,6 +16,7 @@ const optionsPanel = new OptionsPanel()
 const progressPanel = new ProgressPanel()
 const previewPanel  = new PreviewPanel()
 const tocPanel      = new TOCPanel()
+const zoneEditor    = new ZoneEditor()
 
 // Apply Korean as default language
 applyI18n()
@@ -79,6 +81,9 @@ document.getElementById('btn-process').addEventListener('click', async () => {
       ? [options.pageRangeStart - 1, options.pageRangeEnd != null ? options.pageRangeEnd - 1 : null]
       : [0, null]
 
+    const customZones = options.customZonesEnabled ? zoneEditor.getZones() : []
+    const margins = options.customMarginsEnabled ? options.margins : {}
+
     const result = await app.processFile({
       input_path: filePath,
       output_path: outputPath,
@@ -97,7 +102,11 @@ document.getElementById('btn-process').addEventListener('click', async () => {
         split_shared_start: options.splitSharedStart,
         split_shared_end: options.splitSharedEnd,
         page_range: pageRange,
-        parallel_threads: options.threads
+        parallel_threads: options.threads,
+        zone_preset: options.zonePreset,
+        zones: customZones,
+        margins,
+        manual_toc: _manualTocEntries
       }
     })
 
@@ -126,6 +135,99 @@ document.getElementById('btn-cancel').addEventListener('click', async () => {
   appendLog('Cancel requested…', 'warn')
   await app.cancelJob({ job_id: _currentJobId })
   progressPanel.showCancelled()
+})
+
+// Zone editor toggle
+document.getElementById('opt-custom-zones').addEventListener('change', (e) => {
+  zoneEditor.setActive(e.target.checked)
+})
+document.getElementById('btn-clear-zones').addEventListener('click', () => {
+  zoneEditor.clearZones()
+})
+document.getElementById('opt-zone-preset').addEventListener('change', (e) => {
+  const preset = e.target.value
+  if (!preset) return
+  // Load preset zones (no image available here; backend will apply preset during OCR)
+  appendLog(`Zone preset: ${preset}`)
+})
+
+// Manual TOC
+const _manualTocEntries = []
+document.getElementById('btn-toc-add').addEventListener('click', () => {
+  const title = document.getElementById('toc-add-title').value.trim()
+  const page = parseInt(document.getElementById('toc-add-page').value, 10)
+  const level = parseInt(document.getElementById('toc-add-level').value, 10)
+  if (!title || !page) return
+
+  _manualTocEntries.push({ title, page_num: page - 1, level, display_num: '' })
+  _renderManualToc()
+  document.getElementById('toc-add-title').value = ''
+  document.getElementById('toc-add-page').value = ''
+})
+
+function _renderManualToc () {
+  const list = document.getElementById('manual-toc-list')
+  list.innerHTML = ''
+  _manualTocEntries.forEach((entry, idx) => {
+    const div = document.createElement('div')
+    div.className = 'manual-toc-entry'
+    div.innerHTML = `<span class="manual-toc-level">L${entry.level}</span>
+      <span class="manual-toc-title">${entry.title}</span>
+      <span class="manual-toc-page">p.${entry.page_num + 1}</span>
+      <button class="zone-delete" onclick="this.parentElement.remove()">✕</button>`
+    div.querySelector('.zone-delete').addEventListener('click', () => {
+      _manualTocEntries.splice(idx, 1)
+      _renderManualToc()
+    })
+    list.appendChild(div)
+  })
+}
+
+// Data download dialog
+document.getElementById('btn-download-data').addEventListener('click', () => {
+  document.getElementById('data-dialog').classList.remove('hidden')
+})
+document.getElementById('btn-data-close').addEventListener('click', () => {
+  document.getElementById('data-dialog').classList.add('hidden')
+})
+document.getElementById('btn-data-start').addEventListener('click', async () => {
+  const langs = []
+  if (document.getElementById('dl-grc').checked) langs.push('grc')
+  if (document.getElementById('dl-lat').checked) langs.push('lat')
+  if (document.getElementById('dl-eng').checked) langs.push('eng')
+
+  const corpusIds = []
+  if (document.getElementById('dl-lace').checked) corpusIds.push('lace_greek')
+  if (document.getElementById('dl-ogl').checked) corpusIds.push('ogl_sample')
+
+  const wrap = document.getElementById('data-progress-wrap')
+  const bar  = document.getElementById('data-progress-bar')
+  const txt  = document.getElementById('data-progress-text')
+  wrap.classList.remove('hidden')
+
+  const handler = (data) => {
+    bar.style.width = `${data.pct}%`
+    txt.textContent = data.message
+    appendLog(data.message)
+  }
+  app.onDataProgress(handler)
+
+  try {
+    if (langs.length > 0) {
+      const r = await app.dataDownloadTessdata({ langs })
+      appendLog(`Tessdata download done: ${JSON.stringify(r.results)}`, 'success')
+    }
+    if (corpusIds.length > 0) {
+      const r = await app.dataDownloadCorpus({ corpus_ids: corpusIds })
+      appendLog(`Corpus download done: ${r.output_dir}`, 'success')
+    }
+    txt.textContent = '다운로드 완료!'
+  } catch (err) {
+    txt.textContent = `오류: ${err.message}`
+    appendLog(`Download error: ${err.message}`, 'error')
+  } finally {
+    app.offDataProgress(handler)
+  }
 })
 
 // Menu commands

@@ -19,9 +19,6 @@ class IPCBridge {
     ipcMain.handle('ocr:cancel', (e, args) =>
       this._python.call('ocr.cancel', args))
 
-    ipcMain.handle('ocr:train', (e, args) =>
-      this._python.call('ocr.train', args))
-
     ipcMain.handle('pdf:preview', (e, args) =>
       this._python.call('pdf.preview', args))
 
@@ -31,9 +28,20 @@ class IPCBridge {
     ipcMain.handle('system:check', () =>
       this._python.call('system.check', {}))
 
+    ipcMain.handle('data:listSources', () =>
+      this._python.call('data.list_sources', {}))
+
+    ipcMain.handle('data:downloadTessdata', (e, args) =>
+      this._python.call('data.download_tessdata', args))
+
+    ipcMain.handle('data:downloadCorpus', (e, args) =>
+      this._python.call('data.download_corpus', args))
+
     ipcMain.handle('dialog:openFile', () => this._showOpenDialog())
 
     ipcMain.handle('dialog:saveFile', (e, args) => this._showSaveDialog(args))
+
+    ipcMain.handle('dialog:openDirectory', () => this._showOpenDirDialog())
   }
 
   forwardNotification (win, notification) {
@@ -42,9 +50,18 @@ class IPCBridge {
     const method = notification.method
     if (method === 'ocr.progress') {
       win.webContents.send('ocr:progress', notification.params)
-    } else if (method === 'ocr.train.progress') {
-      win.webContents.send('ocr:train:progress', notification.params)
+    } else if (method === 'data.progress') {
+      win.webContents.send('data:progress', notification.params)
     }
+  }
+
+  async _showOpenDirDialog () {
+    const result = await dialog.showOpenDialog(this._win, {
+      title: 'Select Directory',
+      properties: ['openDirectory', 'createDirectory']
+    })
+    if (result.canceled) return null
+    return result.filePaths[0]
   }
 
   async _showOpenDialog () {
