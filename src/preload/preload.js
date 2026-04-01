@@ -10,7 +10,6 @@ contextBridge.exposeInMainWorld('ocrApp', {
   // OCR commands
   processFile: (args) => ipcRenderer.invoke('ocr:process', args),
   cancelJob: (args) => ipcRenderer.invoke('ocr:cancel', args),
-  trainModel: (args) => ipcRenderer.invoke('ocr:train', args),
 
   // PDF commands
   previewPage: (args) => ipcRenderer.invoke('pdf:preview', args),
@@ -19,20 +18,22 @@ contextBridge.exposeInMainWorld('ocrApp', {
   // System
   systemCheck: () => ipcRenderer.invoke('system:check'),
 
+  // Data download
+  dataListSources: () => ipcRenderer.invoke('data:listSources'),
+  dataDownloadTessdata: (args) => ipcRenderer.invoke('data:downloadTessdata', args),
+  dataDownloadCorpus: (args) => ipcRenderer.invoke('data:downloadCorpus', args),
+  onDataProgress: (cb) => ipcRenderer.on('data:progress', (_, data) => cb(data)),
+  offDataProgress: (cb) => ipcRenderer.removeListener('data:progress', cb),
+
+  // File dialogs
+  openDirectory: () => ipcRenderer.invoke('dialog:openDirectory'),
+
   // Events: OCR progress
   onProgress: (cb) => {
     ipcRenderer.on('ocr:progress', (_, data) => cb(data))
   },
   offProgress: (cb) => {
     ipcRenderer.removeListener('ocr:progress', cb)
-  },
-
-  // Events: training progress
-  onTrainProgress: (cb) => {
-    ipcRenderer.on('ocr:train:progress', (_, data) => cb(data))
-  },
-  offTrainProgress: (cb) => {
-    ipcRenderer.removeListener('ocr:train:progress', cb)
   },
 
   // Events: system ready / error
@@ -45,7 +46,7 @@ contextBridge.exposeInMainWorld('ocrApp', {
 
   // Events: menu commands
   onMenuCommand: (cb) => {
-    const events = ['menu:open-file', 'menu:save-file', 'menu:process', 'menu:cancel', 'menu:train']
+    const events = ['menu:open-file', 'menu:save-file', 'menu:process', 'menu:cancel']
     events.forEach((evt) => {
       ipcRenderer.on(evt, () => cb(evt))
     })

@@ -15,9 +15,10 @@ from image.upscaler import ImageUpscaler
 from ocr.engine import OCREngine, PageResult
 from ocr.confidence import ConfidenceRetry
 from ocr.layout import LayoutDetector
+from ocr.zones import ZoneManager, OCRZone, MarginConfig
 from pdf.reader import PDFReader
 from pdf.writer import PDFWriter, PageDimensions
-from pdf.toc import TOCDetector
+from pdf.toc import TOCDetector, TOCEntry
 from pdf.page_numbering import PageNumberExtractor
 from pdf.splitter import BilingualSplitter
 
@@ -47,10 +48,16 @@ class OCRHandler:
 
     def cancel(self, params: dict) -> dict:
         job_id = params.get('job_id', '')
-        if job_id in self._active_jobs:
+        if job_id and job_id in self._active_jobs:
             self._active_jobs[job_id] = True
             self._queue.cancel(job_id)
             return {'cancelled': True, 'job_id': job_id}
+        elif not job_id and self._active_jobs:
+            # Cancel all active jobs when no specific id is provided
+            for jid in list(self._active_jobs.keys()):
+                self._active_jobs[jid] = True
+                self._queue.cancel(jid)
+            return {'cancelled': True, 'job_id': 'all'}
         return {'cancelled': False, 'job_id': job_id}
 
     def _is_cancelled(self, job_id: str) -> bool:
@@ -81,6 +88,14 @@ class OCRHandler:
         split_bilingual = options.get('split_bilingual', False)
         page_range = options.get('page_range', [0, None])
         ocr_dpi = options.get('dpi', self._config.ocr_dpi)
+        # Zone options
+        zone_preset = options.get('zone_preset', '')
+        custom_zones_raw = options.get('zones', [])
+        margin_cfg = MarginConfig.from_dict(options.get('margins', {}))
+        # Manual TOC entries from UI
+        manual_toc_raw = options.get('manual_toc', [])
+        # Page label ranges: [{start, end, style, offset}]
+        page_label_ranges = options.get('page_label_ranges', [])
 
         # Initialize components
         reader = PDFReader(input_path)
@@ -130,24 +145,46 @@ class OCRHandler:
             )
             page_dims.append(dims)
 
-            # Layout detection
-            if use_layout:
-                regions = layout_detector.get_regions(enhanced)
+            # Determine zones for this page
+            zone_mgr = ZoneManager()
+            if custom_zones_raw:
+                zones = [OCRZone.from_dict(z) for z in custom_zones_raw]
+            elif zone_preset:
+                zones = zone_mgr.get_preset_zones(zone_preset, enhanced, margin_cfg)
+            elif use_layout:
+                # Fall back to auto layout detection, convert to zones
+                from ocr.layout import LayoutMode
+                layout_regions = layout_detector.get_regions(enhanced)
+                zones = [
+                    OCRZone(
+                        r.bbox[0] / enh_w, r.bbox[1] / enh_h,
+                        r.bbox[2] / enh_w, r.bbox[3] / enh_h,
+                        label=f'col{r.column_index}'
+                    )
+                    for r in layout_regions
+                ]
             else:
-                from ocr.layout import LayoutMode, LayoutRegion
-                regions = [LayoutRegion(LayoutMode.SINGLE_COLUMN, (0, 0, enh_w, enh_h), -1)]
+                zones = [OCRZone(0, 0, 1, 1)]
 
-            # OCR per region, combine results
+            # OCR per zone, combine results
             combined_words = []
-            for region in regions:
-                x0, y0, x1, y1 = region.bbox
-                region_img = enhanced.crop((x0, y0, x1, y1))
-                region_result = engine.process_page(region_img, page_num)
+            for zone in zones:
+                bx0, by0, bx1, by1 = zone.pixel_bbox(enh_w, enh_h)
+                if bx1 <= bx0 or by1 <= by0:
+                    continue
+                region_img = enhanced.crop((bx0, by0, bx1, by1))
+                lang_str = zone.lang or None
+                # Temporarily override engine languages if zone has its own
+                if lang_str:
+                    zone_engine = OCREngine([lang_str], tesseract_cmd=self._config.tesseract_cmd)
+                else:
+                    zone_engine = engine
+                region_result = zone_engine.process_page(region_img, page_num)
 
                 # Offset word coordinates back to full-page space
                 for word in region_result.words:
-                    word.left += x0
-                    word.top += y0
+                    word.left += bx0
+                    word.top += by0
                 combined_words.extend(region_result.words)
 
             from ocr.engine import PageResult
@@ -186,6 +223,17 @@ class OCRHandler:
             detector = TOCDetector()
             toc_entries = detector.detect(page_results)
 
+        # Merge manual TOC entries from UI
+        for raw in manual_toc_raw:
+            toc_entries.append(TOCEntry(
+                title=raw.get('title', ''),
+                page_num=int(raw.get('page_num', 0)),
+                level=int(raw.get('level', 1)),
+                display_num=raw.get('display_num', '')
+            ))
+        # Sort by page
+        toc_entries.sort(key=lambda e: e.page_num)
+
         # Page numbering
         page_number_map = {}
         if page_numbering:
@@ -202,7 +250,19 @@ class OCRHandler:
             splitter = BilingualSplitter()
             lang_a, lang_b = splitter.detect_alternating_languages(page_results)
             out_dir = os.path.dirname(output_path)
-            path_a, path_b = splitter.split(output_path, out_dir, lang_a, lang_b)
+            lang_a_name = options.get('split_lang_a', 'greek')
+            lang_b_name = options.get('split_lang_b', 'latin')
+            shared_start = options.get('split_shared_start')
+            shared_end = options.get('split_shared_end')
+            shared_range = None
+            if shared_start is not None and shared_end is not None:
+                shared_range = (int(shared_start) - 1, int(shared_end) - 1)  # convert 1-indexed UI to 0-indexed
+            path_a, path_b = splitter.split(
+                output_path, out_dir, lang_a, lang_b,
+                lang_a_name=lang_a_name,
+                lang_b_name=lang_b_name,
+                shared_range=shared_range
+            )
             split_files = [path_a, path_b]
 
         overall_conf = sum(pr.avg_confidence for pr in page_results) / max(len(page_results), 1)

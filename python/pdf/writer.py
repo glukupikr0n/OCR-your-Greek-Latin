@@ -69,12 +69,8 @@ class PDFWriter:
         if not page_result.words:
             return
 
-        # Build the invisible text content stream
+        # Build the invisible text content stream (line-level)
         content = self._build_text_stream(page_result.words, dims)
-
-        # Create a new content stream object
-        text_stream = pikepdf.Stream(page.obj.objgen[0]._pdf if hasattr(page.obj.objgen[0], '_pdf') else None, content)
-        # Use a fresh approach: encode and embed
         text_obj = pikepdf.Stream(page.obj.owner, content)
 
         # Get existing content stream(s) and append our overlay
@@ -90,51 +86,59 @@ class PDFWriter:
         # Ensure /Resources has a font (invisible, but required for text ops)
         self._ensure_font(page)
 
-    def _build_text_stream(self, words: list[WordResult], dims: PageDimensions) -> bytes:
-        """Build PDF content stream bytes for an invisible text overlay."""
-        lines = []
-        lines.append(b'q')          # save graphics state
-        lines.append(b'BT')         # begin text
-        lines.append(b'/F1 8 Tf')   # font (invisible at size 0 causes issues; use 8pt)
-        lines.append(b'3 Tr')       # invisible text rendering mode
+    def _group_words_into_lines(self, words: list[WordResult]) -> list[list[WordResult]]:
+        """Group words into lines by vertical proximity."""
+        if not words:
+            return []
+        sorted_words = sorted(words, key=lambda w: w.top)
 
-        for word in words:
-            if not word.text.strip():
+        lines: list[list[WordResult]] = []
+        current: list[WordResult] = [sorted_words[0]]
+        line_top = sorted_words[0].top
+        line_height = max(sorted_words[0].height, 1)
+
+        for word in sorted_words[1:]:
+            if abs(word.top - line_top) < line_height * 0.6:
+                current.append(word)
+                line_height = max(line_height, word.height)
+            else:
+                lines.append(current)
+                current = [word]
+                line_top = word.top
+                line_height = max(word.height, 1)
+
+        if current:
+            lines.append(current)
+        return lines
+
+    def _build_text_stream(self, words: list[WordResult], dims: PageDimensions) -> bytes:
+        """Build PDF content stream with one text element per line."""
+        stream: list[bytes] = [b'q', b'BT', b'3 Tr']  # invisible rendering mode
+
+        for line_words in self._group_words_into_lines(words):
+            # Sort left-to-right within the line
+            line_words.sort(key=lambda w: w.left)
+
+            x0 = min(w.left for w in line_words)
+            y0 = min(w.top for w in line_words)
+            line_h = max((w.height for w in line_words), default=12)
+
+            # Convert pixel coords to PDF points (origin: bottom-left)
+            x_pt = round(x0 * dims.px_to_pt_x, 2)
+            y_pt = round(dims.height_pts - (y0 + line_h) * dims.px_to_pt_y, 2)
+            font_size = round(max(1.0, line_h * dims.px_to_pt_y), 2)
+
+            text = ' '.join(w.text for w in line_words if w.text.strip())
+            if not text:
                 continue
 
-            # Convert pixel coordinates to PDF points
-            # PDF origin is bottom-left; pixel origin is top-left
-            x_pt = word.left * dims.px_to_pt_x
-            y_pt = dims.height_pts - (word.top + word.height) * dims.px_to_pt_y
+            escaped = self._pdf_escape(text)
+            stream.append(f'/F1 {font_size} Tf'.encode())
+            stream.append(f'{font_size} 0 0 {font_size} {x_pt} {y_pt} Tm'.encode())
+            stream.append(f'({escaped}) Tj'.encode())
 
-            # Scale font to match word height (approximate)
-            font_size = max(1.0, word.height * dims.px_to_pt_y)
-
-            x_pt = round(x_pt, 2)
-            y_pt = round(y_pt, 2)
-            font_size = round(font_size, 2)
-
-            # Set font size per word for accuracy
-            lines.append(f'/F1 {font_size} Tf'.encode())
-            lines.append(f'{x_pt} {y_pt} Td'.encode())
-
-            # Encode text as PDF string
-            escaped = self._pdf_escape(word.text)
-            lines.append(f'({escaped}) Tj'.encode())
-
-            # Reset position to absolute (use Tm matrix next word)
-            # Actually use absolute positioning via Tm
-            lines[-3] = f'/F1 {font_size} Tf'.encode()  # already set
-            # Replace last Td with absolute Tm
-            del lines[-2]
-            lines.append(f'{font_size} 0 0 {font_size} {x_pt} {y_pt} Tm'.encode())
-            lines.append(f'({escaped}) Tj'.encode())
-            del lines[-3]  # remove duplicate Tj
-
-        lines.append(b'ET')  # end text
-        lines.append(b'Q')   # restore graphics state
-
-        return b'\n'.join(lines) + b'\n'
+        stream.extend([b'ET', b'Q'])
+        return b'\n'.join(stream) + b'\n'
 
     def _ensure_font(self, page: pikepdf.Page) -> None:
         """Add a standard font reference to page resources if missing."""

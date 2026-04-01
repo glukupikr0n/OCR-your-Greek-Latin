@@ -5,6 +5,7 @@ import { OptionsPanel } from './components/options-panel.js'
 import { ProgressPanel } from './components/progress-panel.js'
 import { PreviewPanel } from './components/preview-panel.js'
 import { TOCPanel } from './components/toc-panel.js'
+import { ZoneEditor } from './components/zone-editor.js'
 import { t, setLang, getLang, applyI18n } from './i18n.js'
 
 const app = window.ocrApp
@@ -15,9 +16,24 @@ const optionsPanel = new OptionsPanel()
 const progressPanel = new ProgressPanel()
 const previewPanel  = new PreviewPanel()
 const tocPanel      = new TOCPanel()
+const zoneEditor    = new ZoneEditor()
 
 // Apply Korean as default language
 applyI18n()
+
+// Log helpers
+function appendLog (msg, level = 'info') {
+  const el = document.getElementById('log-output')
+  if (!el) return
+  const line = document.createElement('div')
+  line.className = `log-line log-${level}`
+  const ts = new Date().toLocaleTimeString()
+  line.textContent = `[${ts}] ${msg}`
+  el.appendChild(line)
+  el.scrollTop = el.scrollHeight
+}
+
+let _currentJobId = null
 
 // Language toggle
 document.getElementById('btn-lang-toggle').addEventListener('click', () => {
@@ -47,18 +63,31 @@ document.getElementById('btn-process').addEventListener('click', async () => {
   if (!outputPath) return
 
   const options = optionsPanel.getOptions()
+  _currentJobId = crypto.randomUUID()
 
   document.getElementById('btn-process').classList.add('hidden')
   document.getElementById('btn-cancel').classList.remove('hidden')
   progressPanel.start(previewPanel.totalPages)
+  appendLog(`Processing started (job ${_currentJobId.slice(0, 8)}…)`)
 
-  const progressHandler = (data) => progressPanel.update(data)
+  const progressHandler = (data) => {
+    progressPanel.update(data)
+    appendLog(`Page ${data.page + 1}/${data.total_pages} — confidence ${data.current_word_confidence?.toFixed(1)}%`)
+  }
   app.onProgress(progressHandler)
 
   try {
+    const pageRange = options.pageRangeEnabled
+      ? [options.pageRangeStart - 1, options.pageRangeEnd != null ? options.pageRangeEnd - 1 : null]
+      : [0, null]
+
+    const customZones = options.customZonesEnabled ? zoneEditor.getZones() : []
+    const margins = options.customMarginsEnabled ? options.margins : {}
+
     const result = await app.processFile({
       input_path: filePath,
       output_path: outputPath,
+      job_id: _currentJobId,
       languages: options.languages,
       options: {
         enhancement: options.enhancement,
@@ -70,18 +99,32 @@ document.getElementById('btn-process').addEventListener('click', async () => {
         split_bilingual: options.splitBilingual,
         split_lang_a: options.splitLangA,
         split_lang_b: options.splitLangB,
-        parallel_threads: options.threads
+        split_shared_start: options.splitSharedStart,
+        split_shared_end: options.splitSharedEnd,
+        page_range: pageRange,
+        parallel_threads: options.threads,
+        zone_preset: options.zonePreset,
+        zones: customZones,
+        margins,
+        manual_toc: _manualTocEntries
       }
     })
 
-    progressPanel.finish(result)
-    showResults(result)
-    if (result.toc_entries?.length > 0) tocPanel.render(result.toc_entries)
+    if (result.status === 'cancelled') {
+      appendLog('Processing cancelled.', 'warn')
+    } else {
+      appendLog(`Done — ${result.pages_processed} pages, avg confidence ${result.avg_confidence?.toFixed(1)}%`, 'success')
+      progressPanel.finish(result)
+      showResults(result)
+      if (result.toc_entries?.length > 0) tocPanel.render(result.toc_entries)
+    }
 
   } catch (err) {
     progressPanel.showError(err.message)
+    appendLog(`Error: ${err.message}`, 'error')
   } finally {
     app.offProgress(progressHandler)
+    _currentJobId = null
     document.getElementById('btn-cancel').classList.add('hidden')
     document.getElementById('btn-process').classList.remove('hidden')
   }
@@ -89,49 +132,101 @@ document.getElementById('btn-process').addEventListener('click', async () => {
 
 // Cancel
 document.getElementById('btn-cancel').addEventListener('click', async () => {
-  await app.cancelJob({})
+  appendLog('Cancel requested…', 'warn')
+  await app.cancelJob({ job_id: _currentJobId })
   progressPanel.showCancelled()
-  document.getElementById('btn-cancel').classList.add('hidden')
-  document.getElementById('btn-process').classList.remove('hidden')
 })
 
-// Train dialog
-document.getElementById('btn-train').addEventListener('click', () => {
-  document.getElementById('train-dialog').classList.remove('hidden')
+// Zone editor toggle
+document.getElementById('opt-custom-zones').addEventListener('change', (e) => {
+  zoneEditor.setActive(e.target.checked)
 })
-document.getElementById('btn-train-close').addEventListener('click', () => {
-  document.getElementById('train-dialog').classList.add('hidden')
+document.getElementById('btn-clear-zones').addEventListener('click', () => {
+  zoneEditor.clearZones()
 })
-document.getElementById('btn-select-gt-dir').addEventListener('click', async () => {
-  const path = await app.openFileDialog()
-  if (path) document.getElementById('train-gt-dir').value = path
+document.getElementById('opt-zone-preset').addEventListener('change', (e) => {
+  const preset = e.target.value
+  if (!preset) return
+  // Load preset zones (no image available here; backend will apply preset during OCR)
+  appendLog(`Zone preset: ${preset}`)
 })
-document.getElementById('btn-train-start').addEventListener('click', async () => {
-  const gtDir = document.getElementById('train-gt-dir').value
-  if (!gtDir) { alert('Ground truth 디렉토리를 선택하세요.'); return }
 
-  const wrap = document.getElementById('train-progress-wrap')
-  const bar  = document.getElementById('train-progress-bar')
-  const txt  = document.getElementById('train-progress-text')
+// Manual TOC
+const _manualTocEntries = []
+document.getElementById('btn-toc-add').addEventListener('click', () => {
+  const title = document.getElementById('toc-add-title').value.trim()
+  const page = parseInt(document.getElementById('toc-add-page').value, 10)
+  const level = parseInt(document.getElementById('toc-add-level').value, 10)
+  if (!title || !page) return
+
+  _manualTocEntries.push({ title, page_num: page - 1, level, display_num: '' })
+  _renderManualToc()
+  document.getElementById('toc-add-title').value = ''
+  document.getElementById('toc-add-page').value = ''
+})
+
+function _renderManualToc () {
+  const list = document.getElementById('manual-toc-list')
+  list.innerHTML = ''
+  _manualTocEntries.forEach((entry, idx) => {
+    const div = document.createElement('div')
+    div.className = 'manual-toc-entry'
+    div.innerHTML = `<span class="manual-toc-level">L${entry.level}</span>
+      <span class="manual-toc-title">${entry.title}</span>
+      <span class="manual-toc-page">p.${entry.page_num + 1}</span>
+      <button class="zone-delete" onclick="this.parentElement.remove()">✕</button>`
+    div.querySelector('.zone-delete').addEventListener('click', () => {
+      _manualTocEntries.splice(idx, 1)
+      _renderManualToc()
+    })
+    list.appendChild(div)
+  })
+}
+
+// Data download dialog
+document.getElementById('btn-download-data').addEventListener('click', () => {
+  document.getElementById('data-dialog').classList.remove('hidden')
+})
+document.getElementById('btn-data-close').addEventListener('click', () => {
+  document.getElementById('data-dialog').classList.add('hidden')
+})
+document.getElementById('btn-data-start').addEventListener('click', async () => {
+  const langs = []
+  if (document.getElementById('dl-grc').checked) langs.push('grc')
+  if (document.getElementById('dl-lat').checked) langs.push('lat')
+  if (document.getElementById('dl-eng').checked) langs.push('eng')
+
+  const corpusIds = []
+  if (document.getElementById('dl-lace').checked) corpusIds.push('lace_greek')
+  if (document.getElementById('dl-ogl').checked) corpusIds.push('ogl_sample')
+
+  const wrap = document.getElementById('data-progress-wrap')
+  const bar  = document.getElementById('data-progress-bar')
+  const txt  = document.getElementById('data-progress-text')
   wrap.classList.remove('hidden')
 
   const handler = (data) => {
     bar.style.width = `${data.pct}%`
     txt.textContent = data.message
+    appendLog(data.message)
   }
-  app.onTrainProgress(handler)
+  app.onDataProgress(handler)
 
   try {
-    const result = await app.trainModel({
-      ground_truth_dir: gtDir,
-      base_lang: document.getElementById('train-base-lang').value,
-      output_model_name: document.getElementById('train-model-name').value
-    })
-    txt.textContent = `완료: ${result.output_path}`
+    if (langs.length > 0) {
+      const r = await app.dataDownloadTessdata({ langs })
+      appendLog(`Tessdata download done: ${JSON.stringify(r.results)}`, 'success')
+    }
+    if (corpusIds.length > 0) {
+      const r = await app.dataDownloadCorpus({ corpus_ids: corpusIds })
+      appendLog(`Corpus download done: ${r.output_dir}`, 'success')
+    }
+    txt.textContent = '다운로드 완료!'
   } catch (err) {
     txt.textContent = `오류: ${err.message}`
+    appendLog(`Download error: ${err.message}`, 'error')
   } finally {
-    app.offTrainProgress(handler)
+    app.offDataProgress(handler)
   }
 })
 
@@ -140,7 +235,6 @@ app.onMenuCommand((cmd) => {
   if (cmd === 'menu:open-file') filePanel.onSelectFile()
   if (cmd === 'menu:process')   document.getElementById('btn-process').click()
   if (cmd === 'menu:cancel')    document.getElementById('btn-cancel').click()
-  if (cmd === 'menu:train')     document.getElementById('btn-train').click()
 })
 
 // System ready / error
@@ -148,10 +242,14 @@ app.onSystemReady((info) => {
   if (!info.ready) {
     const missing = info.languages?.missing?.join(', ') || ''
     showBanner(t('system-missing-langs', { langs: missing }), 'warning')
+    appendLog(`Warning: missing language data — ${missing}`, 'warn')
+  } else {
+    appendLog('Backend ready.', 'success')
   }
 })
 app.onSystemError((data) => {
   showBanner(t('system-backend-error', { msg: data.message }), 'error')
+  appendLog(`Backend error: ${data.message}`, 'error')
 })
 
 // Auto-update

@@ -14,10 +14,9 @@ class PythonManager {
   }
 
   async start () {
-    const pythonExe = this._findPythonExecutable()
-    const scriptPath = this._findScriptPath()
+    const { exe, args } = this._resolveBackend()
 
-    this.process = spawn(pythonExe, [scriptPath], {
+    this.process = spawn(exe, args, {
       stdio: ['pipe', 'pipe', 'pipe'],
       env: {
         ...process.env,
@@ -132,32 +131,25 @@ class PythonManager {
     }
   }
 
-  _findPythonExecutable () {
-    // 1. Bundled venv (production)
-    const venvPython = path.join(
-      process.resourcesPath || path.join(__dirname, '../../..'),
-      'python', '.venv', 'bin', 'python3'
-    )
-    if (fs.existsSync(venvPython)) return venvPython
+  _resolveBackend () {
+    const resourcesBase = process.resourcesPath || path.join(__dirname, '../../..')
+    const devScriptPath = path.join(__dirname, '../../../python/main.py')
 
-    // 2. Local dev venv
-    const devVenvPython = path.join(__dirname, '../../../python/.venv/bin/python3')
-    if (fs.existsSync(devVenvPython)) return devVenvPython
+    // 1. PyInstaller standalone binary (production .app)
+    const bundledBin = path.join(resourcesBase, 'guru-backend')
+    if (fs.existsSync(bundledBin)) {
+      try { fs.chmodSync(bundledBin, '755') } catch (_) {}
+      return { exe: bundledBin, args: [] }
+    }
 
-    // 3. System python3
-    return 'python3'
-  }
+    // 2. Dev venv
+    const devVenv = path.join(__dirname, '../../../python/.venv/bin/python3')
+    if (fs.existsSync(devVenv)) {
+      return { exe: devVenv, args: [devScriptPath] }
+    }
 
-  _findScriptPath () {
-    // Production: resources/python/main.py
-    const prodPath = path.join(
-      process.resourcesPath || path.join(__dirname, '../../..'),
-      'python', 'main.py'
-    )
-    if (fs.existsSync(prodPath)) return prodPath
-
-    // Dev: local python/main.py
-    return path.join(__dirname, '../../../python/main.py')
+    // 3. System python3 fallback
+    return { exe: 'python3', args: [devScriptPath] }
   }
 }
 
