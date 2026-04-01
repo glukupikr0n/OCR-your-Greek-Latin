@@ -34,6 +34,30 @@ html, body {
   height: 100vh;
 }
 
+/* Top bar */
+#top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 14px;
+  height: 36px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  -webkit-app-region: drag;
+  flex-shrink: 0;
+}
+
+#app-title {
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  color: var(--accent);
+}
+
+#top-bar-right {
+  -webkit-app-region: no-drag;
+}
+
 /* Status banner */
 #status-banner {
   padding: 6px 16px;
@@ -50,6 +74,21 @@ html, body {
 #status-banner.hidden {
   display: none;
 }
+
+/* Update banner */
+#update-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 5px 14px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  font-size: 12px;
+  color: var(--accent);
+  flex-shrink: 0;
+}
+#update-banner.hidden { display: none; }
+#update-message { flex: 1; }
 
 /* Main layout: three-panel */
 #main-layout {

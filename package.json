@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "electron": "^33.0.0",
+    "electron-updater": "^6.3.0",
     "uuid": "^9.0.0"
   },
   "devDependencies": {
@@ -76,6 +77,11 @@
     "win": {
       "target": ["nsis"],
       "icon": "assets/icon.ico"
+    },
+    "publish": {
+      "provider": "github",
+      "owner": "glukupikr0n",
+      "repo": "OCR-your-Greek-Latin"
     }
   }
 }

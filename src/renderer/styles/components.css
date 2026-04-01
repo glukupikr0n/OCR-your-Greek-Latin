@@ -1,4 +1,9 @@
 /* Drop zone */
+.drop-icon {
+  font-size: 28px;
+  margin-bottom: 6px;
+}
+
 .drop-zone {
   border: 2px dashed var(--border);
   border-radius: var(--radius);
@@ -83,6 +88,78 @@
   font-size: 12px;
   font-family: var(--font);
   width: 90px;
+}
+
+/* File info row */
+#file-info {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.btn-sm {
+  padding: 2px 8px;
+  font-size: 11px;
+}
+
+/* Sub-settings under checkboxes */
+.opt-item {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.opt-sub {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: 19px;
+  padding: 4px 6px;
+  background: var(--bg);
+  border-left: 2px solid var(--accent);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  font-size: 11px;
+  color: var(--text-muted);
+  flex-wrap: wrap;
+}
+
+.opt-sub.hidden { display: none; }
+
+.opt-sub input[type="number"],
+.opt-sub input[type="text"],
+.opt-sub select {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  padding: 2px 5px;
+  font-size: 11px;
+  font-family: var(--font);
+  width: 70px;
+}
+
+.opt-sub-inline {
+  display: flex;
+  align-items: center;
+  margin-left: 4px;
+}
+
+.opt-sub-inline select {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  padding: 2px 5px;
+  font-size: 11px;
+  font-family: var(--font);
+}
+
+/* Placeholder icon */
+.placeholder-icon {
+  font-size: 56px;
+  color: var(--border);
+  font-family: serif;
+  margin-bottom: 8px;
 }
 
 /* Scrollbar styling */

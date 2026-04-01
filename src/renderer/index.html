@@ -1,103 +1,166 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="Content-Security-Policy"
     content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:">
-  <title>OCR Your Greek Latin</title>
+  <title>Guru — Ancient OCR Master</title>
   <link rel="stylesheet" href="styles/main.css">
   <link rel="stylesheet" href="styles/components.css">
 </head>
 <body>
   <div id="app">
+    <!-- Top bar -->
+    <header id="top-bar">
+      <span id="app-title">Guru</span>
+      <div id="top-bar-right">
+        <button id="btn-lang-toggle" class="btn btn-icon" data-i18n="lang-toggle">EN</button>
+      </div>
+    </header>
+
     <!-- System status banner -->
     <div id="status-banner" class="hidden"></div>
 
+    <!-- Update banner -->
+    <div id="update-banner" class="hidden">
+      <span id="update-message"></span>
+      <button id="btn-update-restart" class="btn btn-primary hidden" data-i18n="update-btn-restart"></button>
+      <button id="btn-update-later" class="btn btn-secondary hidden" data-i18n="update-btn-later"></button>
+    </div>
+
     <div id="main-layout">
-      <!-- Left panel: file + options -->
+      <!-- Left panel -->
       <aside id="left-panel">
+
+        <!-- File section: full-window drag target -->
         <section id="file-section">
           <div id="drop-zone" class="drop-zone">
-            <p class="drop-hint">Drop a PDF or image here</p>
-            <p class="drop-hint-sub">or</p>
-            <button id="btn-open-file" class="btn btn-primary">Open File…</button>
+            <div class="drop-icon">📄</div>
+            <p class="drop-hint" data-i18n="drop-hint">PDF 또는 이미지를 여기에 드래그하세요</p>
+            <p class="drop-hint-sub" data-i18n="drop-hint-sub">또는</p>
+            <button id="btn-open-file" class="btn btn-primary" data-i18n="open-file">파일 열기…</button>
           </div>
           <div id="file-info" class="hidden">
             <div class="file-name" id="file-name-display"></div>
             <div class="file-meta" id="file-meta-display"></div>
+            <button id="btn-change-file" class="btn btn-secondary btn-sm">↩</button>
           </div>
         </section>
 
+        <!-- Options section -->
         <section id="options-section">
-          <h3>Languages</h3>
+          <!-- Languages -->
+          <h3 data-i18n="sec-languages">인식 언어</h3>
           <div class="checkbox-group">
-            <label><input type="checkbox" id="lang-grc" value="grc" checked> Ancient Greek</label>
-            <label><input type="checkbox" id="lang-lat" value="lat" checked> Latin</label>
-            <label><input type="checkbox" id="lang-eng" value="eng" checked> English</label>
+            <label><input type="checkbox" id="lang-grc" value="grc" checked> <span data-i18n="lang-grc">고대 그리스어</span></label>
+            <label><input type="checkbox" id="lang-lat" value="lat" checked> <span data-i18n="lang-lat">라틴어</span></label>
+            <label><input type="checkbox" id="lang-eng" value="eng" checked> <span data-i18n="lang-eng">영어</span></label>
           </div>
 
-          <h3>Image Enhancement</h3>
+          <!-- Image Enhancement -->
+          <h3 data-i18n="sec-enhancement">이미지 전처리</h3>
           <div class="checkbox-group">
-            <label><input type="checkbox" id="opt-deskew" checked> Deskew (2-pass)</label>
-            <label><input type="checkbox" id="opt-grayscale" checked> Grayscale</label>
-            <label><input type="checkbox" id="opt-bw"> Convert to B&amp;W</label>
-            <label><input type="checkbox" id="opt-denoise" checked> Denoise</label>
-            <label><input type="checkbox" id="opt-autocontrast" checked> Auto Contrast</label>
+
+            <div class="opt-item">
+              <label><input type="checkbox" id="opt-deskew" checked> <span data-i18n="opt-deskew">기울기 보정 (2단계)</span></label>
+              <div class="opt-sub hidden" id="sub-deskew">
+                <span data-i18n="opt-deskew-sub">최대 각도 (°)</span>
+                <input type="number" id="opt-deskew-angle" min="1" max="45" value="10" step="1">
+              </div>
+            </div>
+
+            <label><input type="checkbox" id="opt-grayscale" checked> <span data-i18n="opt-grayscale">그레이스케일 변환</span></label>
+            <label><input type="checkbox" id="opt-bw"> <span data-i18n="opt-bw">흑백 변환 (B&amp;W)</span></label>
+
+            <div class="opt-item">
+              <label><input type="checkbox" id="opt-denoise" checked> <span data-i18n="opt-denoise">노이즈 제거</span></label>
+              <div class="opt-sub hidden" id="sub-denoise">
+                <span data-i18n="opt-denoise-sub">강도</span>
+                <select id="opt-denoise-strength">
+                  <option value="5">약</option>
+                  <option value="10" selected>중</option>
+                  <option value="20">강</option>
+                </select>
+              </div>
+            </div>
+
+            <label><input type="checkbox" id="opt-autocontrast" checked> <span data-i18n="opt-autocontrast">자동 대비</span></label>
+
+            <div class="opt-item">
+              <label><input type="checkbox" id="opt-upscale-on"> <span data-i18n="opt-upscale">이미지 업스케일</span></label>
+              <div class="opt-sub hidden" id="sub-upscale">
+                <span data-i18n="opt-upscale-sub">배율</span>
+                <select id="opt-upscale">
+                  <option value="2">2×</option>
+                  <option value="3">3×</option>
+                  <option value="4">4× (Lanczos)</option>
+                </select>
+              </div>
+            </div>
+
           </div>
 
-          <div class="option-row">
-            <label for="opt-upscale">Upscale:</label>
-            <select id="opt-upscale">
-              <option value="1">None (1×)</option>
-              <option value="2">2×</option>
-              <option value="3">3×</option>
-              <option value="4">4× (Lanczos)</option>
-            </select>
-          </div>
-
-          <h3>OCR Options</h3>
+          <!-- OCR Options -->
+          <h3 data-i18n="sec-ocr">OCR 옵션</h3>
           <div class="checkbox-group">
-            <label><input type="checkbox" id="opt-layout" checked> Layout detection</label>
-            <label><input type="checkbox" id="opt-confidence-retry" checked> Smart confidence retry</label>
-            <label><input type="checkbox" id="opt-toc" checked> Detect Table of Contents</label>
-            <label><input type="checkbox" id="opt-page-numbers" checked> Extract page numbers</label>
-            <label><input type="checkbox" id="opt-split-bilingual"> Split bilingual PDF</label>
-          </div>
 
-          <div class="option-row">
-            <label for="opt-confidence-threshold">Confidence threshold:</label>
-            <input type="number" id="opt-confidence-threshold" min="0" max="100" value="60" step="5">
-          </div>
+            <label><input type="checkbox" id="opt-layout" checked> <span data-i18n="opt-layout">레이아웃 감지 (단/복칸)</span></label>
 
-          <div class="option-row">
-            <label for="opt-threads">Threads:</label>
-            <select id="opt-threads">
-              <option value="1">1</option>
-              <option value="2">2</option>
-              <option value="4" selected>4</option>
-            </select>
+            <div class="opt-item">
+              <label><input type="checkbox" id="opt-confidence-retry" checked> <span data-i18n="opt-confidence-retry">스마트 재시도</span></label>
+              <div class="opt-sub hidden" id="sub-confidence">
+                <span data-i18n="opt-confidence-sub">신뢰도 임계값 (%)</span>
+                <input type="number" id="opt-confidence-threshold" min="0" max="100" value="60" step="5">
+              </div>
+            </div>
+
+            <label><input type="checkbox" id="opt-toc" checked> <span data-i18n="opt-toc">목차 자동 감지</span></label>
+            <label><input type="checkbox" id="opt-page-numbers" checked> <span data-i18n="opt-page-numbers">페이지 번호 추출</span></label>
+
+            <div class="opt-item">
+              <label><input type="checkbox" id="opt-split-bilingual"> <span data-i18n="opt-split-bilingual">이중 언어 PDF 분리</span></label>
+              <div class="opt-sub hidden" id="sub-split">
+                <span data-i18n="opt-split-lang-a">언어 A 이름</span>
+                <input type="text" id="opt-split-lang-a" value="greek">
+                <span data-i18n="opt-split-lang-b">언어 B 이름</span>
+                <input type="text" id="opt-split-lang-b" value="latin">
+              </div>
+            </div>
+
+            <div class="opt-item">
+              <label><span data-i18n="opt-threads">처리 스레드 수</span></label>
+              <div class="opt-sub-inline">
+                <select id="opt-threads">
+                  <option value="1">1</option>
+                  <option value="2">2</option>
+                  <option value="4" selected>4</option>
+                </select>
+              </div>
+            </div>
+
           </div>
         </section>
 
         <div id="action-buttons">
-          <button id="btn-process" class="btn btn-success" disabled>Process File</button>
-          <button id="btn-cancel" class="btn btn-danger hidden">Cancel</button>
-          <button id="btn-train" class="btn btn-secondary">Train Model…</button>
+          <button id="btn-process" class="btn btn-success" disabled data-i18n="btn-process">파일 처리</button>
+          <button id="btn-cancel" class="btn btn-danger hidden" data-i18n="btn-cancel">취소</button>
+          <button id="btn-train" class="btn btn-secondary" data-i18n="btn-train">모델 훈련…</button>
         </div>
       </aside>
 
-      <!-- Center panel: preview + progress -->
+      <!-- Center panel -->
       <main id="center-panel">
         <div id="preview-container">
           <div id="page-nav" class="hidden">
             <button id="btn-prev-page" class="btn btn-icon">◀</button>
-            <span id="page-indicator">Page 1 / 1</span>
+            <span id="page-indicator"></span>
             <button id="btn-next-page" class="btn btn-icon">▶</button>
           </div>
-          <canvas id="preview-canvas"></canvas>
+          <canvas id="preview-canvas" class="hidden"></canvas>
           <div id="preview-placeholder">
-            <p>Open a PDF to see a preview</p>
+            <div class="placeholder-icon">Γ</div>
+            <p data-i18n="preview-placeholder">PDF를 열면 미리보기가 표시됩니다</p>
           </div>
         </div>
 
@@ -105,32 +168,32 @@
           <div id="progress-bar-wrap">
             <div id="progress-bar"></div>
           </div>
-          <div id="progress-text">Ready</div>
+          <div id="progress-text"></div>
           <div id="progress-confidence"></div>
         </div>
       </main>
 
-      <!-- Right panel: results -->
+      <!-- Right panel -->
       <aside id="right-panel">
         <div id="result-section" class="hidden">
-          <h3>Results</h3>
+          <h3 data-i18n="result-title">처리 결과</h3>
           <div class="result-stat">
-            <span class="stat-label">Pages processed:</span>
+            <span class="stat-label" data-i18n="stat-pages">처리된 페이지</span>
             <span id="stat-pages" class="stat-value">—</span>
           </div>
           <div class="result-stat">
-            <span class="stat-label">Avg. confidence:</span>
+            <span class="stat-label" data-i18n="stat-confidence">평균 신뢰도</span>
             <span id="stat-confidence" class="stat-value">—</span>
           </div>
           <div class="result-stat">
-            <span class="stat-label">Output:</span>
+            <span class="stat-label" data-i18n="stat-output">저장 경로</span>
             <span id="stat-output" class="stat-value stat-path">—</span>
           </div>
-          <button id="btn-open-output" class="btn btn-primary hidden">Open Output PDF</button>
+          <button id="btn-open-output" class="btn btn-primary hidden" data-i18n="btn-open-output">출력 PDF 열기</button>
         </div>
 
         <div id="toc-section" class="hidden">
-          <h3>Table of Contents</h3>
+          <h3 data-i18n="toc-title">목차</h3>
           <ul id="toc-list" class="toc-list"></ul>
         </div>
       </aside>
@@ -140,16 +203,16 @@
   <!-- Training dialog -->
   <div id="train-dialog" class="dialog-overlay hidden">
     <div class="dialog">
-      <h2>Train Custom Model</h2>
+      <h2 data-i18n="train-title">커스텀 모델 훈련</h2>
       <div class="form-group">
-        <label for="train-gt-dir">Ground Truth Directory:</label>
+        <label for="train-gt-dir" data-i18n="train-gt-dir">Ground Truth 디렉토리</label>
         <div class="input-row">
-          <input type="text" id="train-gt-dir" placeholder="/path/to/ground_truth" readonly>
-          <button id="btn-select-gt-dir" class="btn btn-secondary">Browse…</button>
+          <input type="text" id="train-gt-dir" readonly>
+          <button id="btn-select-gt-dir" class="btn btn-secondary" data-i18n="train-browse">찾아보기…</button>
         </div>
       </div>
       <div class="form-group">
-        <label for="train-base-lang">Base Language:</label>
+        <label for="train-base-lang" data-i18n="train-base-lang">기반 언어</label>
         <select id="train-base-lang">
           <option value="grc">Ancient Greek (grc)</option>
           <option value="lat">Latin (lat)</option>
@@ -157,22 +220,20 @@
         </select>
       </div>
       <div class="form-group">
-        <label for="train-model-name">Output Model Name:</label>
-        <input type="text" id="train-model-name" value="grc_custom" placeholder="my_custom_model">
+        <label for="train-model-name" data-i18n="train-model-name">출력 모델 이름</label>
+        <input type="text" id="train-model-name" value="grc_custom">
       </div>
       <div id="train-progress-wrap" class="hidden">
-        <div id="train-progress-bar-wrap">
-          <div id="train-progress-bar"></div>
-        </div>
+        <div id="train-progress-bar-wrap"><div id="train-progress-bar"></div></div>
         <div id="train-progress-text"></div>
       </div>
       <div class="dialog-actions">
-        <button id="btn-train-start" class="btn btn-success">Start Training</button>
-        <button id="btn-train-close" class="btn btn-secondary">Close</button>
+        <button id="btn-train-start" class="btn btn-success" data-i18n="train-start">훈련 시작</button>
+        <button id="btn-train-close" class="btn btn-secondary" data-i18n="train-close">닫기</button>
       </div>
     </div>
   </div>
 
-  <script src="renderer.js"></script>
+  <script type="module" src="renderer.js"></script>
 </body>
 </html>
