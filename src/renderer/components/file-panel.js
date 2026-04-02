@@ -39,8 +39,9 @@ export class FilePanel {
     })
 
     dropZone.addEventListener('dragleave', (e) => {
-      e.preventDefault()
-      dropZone.classList.remove('drag-over')
+      if (!dropZone.contains(e.relatedTarget)) {
+        dropZone.classList.remove('drag-over')
+      }
     })
 
     dropZone.addEventListener('drop', async (e) => {
@@ -87,7 +88,21 @@ export class FilePanel {
 
     const ext = filePath.split('.').pop().toLowerCase()
     const allowed = ['pdf', 'png', 'jpg', 'jpeg', 'tiff', 'tif', 'bmp']
-    if (!allowed.includes(ext)) return
+    if (!allowed.includes(ext)) {
+      const meta = document.getElementById('file-meta-display')
+      if (meta) {
+        meta.textContent = `⚠ 지원하지 않는 형식: .${ext}`
+        setTimeout(() => { if (meta.textContent.startsWith('⚠')) meta.textContent = '' }, 3000)
+      } else {
+        const hint = document.querySelector('.drop-hint')
+        if (hint) {
+          const orig = hint.textContent
+          hint.textContent = `⚠ 지원하지 않는 형식: .${ext}`
+          setTimeout(() => { hint.textContent = orig }, 3000)
+        }
+      }
+      return
+    }
 
     await this._loadFile(filePath)
   }
