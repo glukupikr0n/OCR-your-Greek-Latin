@@ -33,11 +33,12 @@ class PythonManager {
       console.error('[Python stderr]', data.trim())
     })
 
-    this.process.on('close', (code) => {
-      console.log(`Python process exited with code ${code}`)
+    this.process.on('close', (code, signal) => {
+      const reason = signal ? `signal ${signal}` : `code ${code}`
+      console.log(`Python process exited with ${reason}`)
       // Reject all pending requests
       for (const [, { reject }] of this.pendingRequests) {
-        reject(new Error(`Python process exited with code ${code}`))
+        reject(new Error(`Python process exited with ${reason}`))
       }
       this.pendingRequests.clear()
     })
@@ -53,8 +54,11 @@ class PythonManager {
     // Wait briefly for the process to start
     await new Promise((resolve) => setTimeout(resolve, 200))
 
-    if (this.process.exitCode !== null) {
-      throw new Error(`Python process failed to start (exit code ${this.process.exitCode})`)
+    if (this.process.exitCode !== null || this.process.signalCode !== null) {
+      const reason = this.process.signalCode
+        ? `signal ${this.process.signalCode}`
+        : `exit code ${this.process.exitCode}`
+      throw new Error(`Python process failed to start (${reason})`)
     }
   }
 
