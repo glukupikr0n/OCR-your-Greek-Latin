@@ -82,15 +82,13 @@ tests/               JavaScript 테스트 (unit + e2e)
 
 ## 시작하기 / Quick Start
 
-### 한 번에 클론 → .app 빌드 (macOS)
-
-**처음 설치하는 경우** (저장소를 아직 클론하지 않은 경우):
+### 설치 / Install (macOS)
 
 ```bash
 git clone https://github.com/glukupikr0n/OCR-your-Greek-Latin.git && cd OCR-your-Greek-Latin && ./scripts/install-mac.sh && ./scripts/build-mac-app.sh
 ```
 
-**이미 클론한 경우** (저장소 폴더가 이미 있는 경우):
+### 재설치 / Reinstall
 
 ```bash
 cd OCR-your-Greek-Latin && git pull && ./scripts/install-mac.sh && ./scripts/build-mac-app.sh
@@ -98,19 +96,11 @@ cd OCR-your-Greek-Latin && git pull && ./scripts/install-mac.sh && ./scripts/bui
 
 > 완료 후 `.app`이 `/Applications`에 자동으로 설치됩니다.
 
-### 개발 모드 실행 / Dev mode
-
-```bash
-git clone https://github.com/glukupikr0n/OCR-your-Greek-Latin.git && cd OCR-your-Greek-Latin && ./scripts/install-mac.sh && npm start
-```
-
-이미 클론한 경우:
+### 개발 모드 / Dev mode
 
 ```bash
 cd OCR-your-Greek-Latin && npm start
 ```
-
-> `install-mac.sh` 한 번 실행으로 Homebrew · Tesseract · Poppler · Python 가상환경 · npm 패키지 · 언어팩(`grc`, `lat`) 설치가 모두 완료됩니다.
 
 <details>
 <summary>수동 설치 / Manual setup</summary>
