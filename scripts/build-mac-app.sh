@@ -29,3 +29,18 @@ npm run build:mac:app
 echo ""
 echo "Build complete!"
 ls -lh dist/mac*/*.app 2>/dev/null || ls -lh dist/*.app 2>/dev/null || echo "Check dist/ folder for output."
+
+echo ""
+echo "=== Step 5: Install to /Applications ==="
+APP_PATH=$(find dist -maxdepth 3 -name "*.app" | head -1)
+if [ -n "$APP_PATH" ]; then
+  APP_NAME="$(basename "$APP_PATH")"
+  echo "Installing $APP_NAME to /Applications..."
+  if ditto "$APP_PATH" "/Applications/$APP_NAME"; then
+    echo "✓ Installed: /Applications/$APP_NAME"
+  else
+    echo "  Permission denied — drag $APP_PATH to /Applications manually."
+  fi
+else
+  echo "  No .app found in dist/. Skipping install."
+fi
