@@ -1,5 +1,6 @@
 """System check handler — verifies Tesseract, Poppler, language data."""
 
+import re
 import shutil
 import subprocess
 import os
@@ -61,7 +62,10 @@ class SystemHandler:
                     stderr=subprocess.STDOUT,
                     text=True
                 )
-                available = [l.strip() for l in out.splitlines() if l.strip() and l.strip() != 'List of available tessdata:']
+                available = [
+                    l.strip() for l in out.splitlines()
+                    if l.strip() and re.match(r'^[a-z0-9_]+$', l.strip())
+                ]
         except Exception:
             pass
 

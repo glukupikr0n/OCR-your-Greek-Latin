@@ -135,13 +135,13 @@ class PDFWriter:
             escaped = self._pdf_escape(text)
             stream.append(f'/F1 {font_size} Tf'.encode())
             stream.append(f'{font_size} 0 0 {font_size} {x_pt} {y_pt} Tm'.encode())
-            stream.append(f'({escaped}) Tj'.encode())
+            stream.append(f'<{escaped}> Tj'.encode())
 
         stream.extend([b'ET', b'Q'])
         return b'\n'.join(stream) + b'\n'
 
     def _ensure_font(self, page: pikepdf.Page) -> None:
-        """Add a standard font reference to page resources if missing."""
+        """Add a Unicode-capable composite font reference to page resources."""
         if '/Resources' not in page.obj:
             page.obj['/Resources'] = Dictionary()
 
@@ -151,12 +151,25 @@ class PDFWriter:
 
         fonts = resources['/Font']
         if '/F1' not in fonts:
-            # Use Helvetica (always available in PDF)
+            # Type0 composite font with Identity-H encoding supports full Unicode
+            # (including Greek U+0370–U+03FF, polytonic U+1F00–U+1FFF)
+            cid_font = Dictionary(
+                Type=Name('/Font'),
+                Subtype=Name('/CIDFontType2'),
+                BaseFont=Name('/Helvetica'),
+                CIDSystemInfo=Dictionary(
+                    Registry=String('Adobe'),
+                    Ordering=String('Identity'),
+                    Supplement=0
+                ),
+                DW=1000
+            )
             fonts['/F1'] = Dictionary(
                 Type=Name('/Font'),
-                Subtype=Name('/Type1'),
+                Subtype=Name('/Type0'),
                 BaseFont=Name('/Helvetica'),
-                Encoding=Name('/WinAnsiEncoding')
+                Encoding=Name('/Identity-H'),
+                DescendantFonts=Array([cid_font])
             )
 
     def _inject_toc(self, pdf: Pdf, entries: list[TOCEntry]) -> None:
@@ -186,12 +199,6 @@ class PDFWriter:
 
     @staticmethod
     def _pdf_escape(text: str) -> str:
-        """Escape special PDF string characters."""
-        return (
-            text
-            .replace('\\', '\\\\')
-            .replace('(', '\\(')
-            .replace(')', '\\)')
-            .replace('\n', '\\n')
-            .replace('\r', '\\r')
-        )
+        """Encode text as UTF-16BE hex string for Type0/Identity-H font.
+        Supports full Unicode including Greek and polytonic characters."""
+        return 'FEFF' + text.encode('utf-16-be').hex().upper()

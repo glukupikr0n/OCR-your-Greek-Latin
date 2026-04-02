@@ -40,13 +40,15 @@ app.whenReady().then(async () => {
   ipcBridge.attachWindow(win)
   ipcBridge.registerIpcHandlers()
 
-  // Verify dependencies on startup
-  try {
-    const sysInfo = await pythonManager.call('system.check', {})
-    win.webContents.send('system:ready', sysInfo)
-  } catch (err) {
-    win.webContents.send('system:error', { message: err.message })
-  }
+  // Verify dependencies after renderer is fully loaded to avoid timing race
+  win.webContents.once('did-finish-load', async () => {
+    try {
+      const sysInfo = await pythonManager.call('system.check', {})
+      win.webContents.send('system:ready', sysInfo)
+    } catch (err) {
+      win.webContents.send('system:error', { message: err.message })
+    }
+  })
 
   // Auto-updater
   setupAutoUpdater(win)

@@ -82,13 +82,19 @@ tests/               JavaScript 테스트 (unit + e2e)
 
 ## 시작하기 / Quick Start
 
-### 설치 / Install (macOS)
+### 설치 / 재설치 / 업데이트 (macOS · Linux)
 
 ```bash
-git clone https://github.com/glukupikr0n/OCR-your-Greek-Latin.git 2>/dev/null || git -C OCR-your-Greek-Latin pull && cd OCR-your-Greek-Latin && ./scripts/install-mac.sh && ./scripts/build-mac-app.sh
+bash <(curl -fsSL https://raw.githubusercontent.com/glukupikr0n/OCR-your-Greek-Latin/main/setup.sh)
 ```
 
-> 처음 실행하면 클론, 이미 있으면 pull 후 빌드합니다. 완료 후 `.app`이 `/Applications`에 자동으로 설치됩니다.
+이미 클론한 경우:
+
+```bash
+bash setup.sh
+```
+
+> 처음이면 클론, 이미 있으면 pull 후 설치·빌드합니다. 완료 후 `.app`이 `/Applications`에 자동 설치됩니다.
 
 ### 개발 모드 / Dev mode
 
