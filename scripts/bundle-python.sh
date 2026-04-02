@@ -1,6 +1,6 @@
 #!/bin/bash
 # Bundle the Python backend with PyInstaller for macOS .app distribution.
-# Output: dist-python/guru-backend (standalone binary, no Python required)
+# Output: dist-python/scriptorium-backend (standalone binary, no Python required)
 
 set -e
 cd "$(dirname "$0")/.."
@@ -17,7 +17,7 @@ echo "==> Installing PyInstaller..."
 echo "==> Bundling Python backend..."
 "$VENV_PYTHON" -m PyInstaller \
   --onefile \
-  --name guru-backend \
+  --name scriptorium-backend \
   --distpath dist-python \
   --workpath dist-python/build \
   --specpath dist-python \
@@ -49,4 +49,4 @@ echo "==> Bundling Python backend..."
   python/main.py
 
 echo ""
-echo "Bundle complete: dist-python/guru-backend"
+echo "Bundle complete: dist-python/scriptorium-backend"

@@ -1,7 +1,7 @@
-# Guru, Your Ancient OCR Master
+# Scriptorium, Your Ancient OCR Master
 
 <p align="center">
-  <img src="assets/icon.png" width="120" alt="Guru icon">
+  <img src="assets/icon.png" width="120" alt="Scriptorium icon — silver Σ on charcoal">
 </p>
 
 ---
@@ -73,7 +73,7 @@ scripts/
   install-linux.sh   Linux 의존성 설치
   generate-icon.py   앱 아이콘 생성 — 차콜 배경 + 실버 Σ (Pillow)
   build-icns.sh      icon.png → icon.icns 변환 (macOS)
-  bundle-python.sh   PyInstaller로 Python 백엔드 번들 (guru-backend)
+  bundle-python.sh   PyInstaller로 Python 백엔드 번들 (scriptorium-backend)
   build-mac-app.sh   macOS .app 전체 빌드 자동화
 tests/               JavaScript 테스트 (unit + e2e)
 ```
@@ -115,7 +115,7 @@ npm install
 ### 독에서 실행 가능한 .app / Dock-ready .app
 
 Python venv 없이 독립 실행되는 `.app` 번들을 만들려면 `build-mac-app.sh`를 사용하세요.  
-내부적으로 PyInstaller로 Python 백엔드를 단일 바이너리(`guru-backend`)로 번들한 뒤 Electron과 함께 패키징합니다.
+내부적으로 PyInstaller로 Python 백엔드를 단일 바이너리(`scriptorium-backend`)로 번들한 뒤 Electron과 함께 패키징합니다.
 
 To build a fully self-contained `.app` (no Python venv required at runtime):
 
@@ -128,7 +128,7 @@ To build a fully self-contained `.app` (no Python venv required at runtime):
 
 ```bash
 ./scripts/build-icns.sh         # icon.png → icon.icns
-./scripts/bundle-python.sh      # Python 백엔드 → dist-python/guru-backend
+./scripts/bundle-python.sh      # Python 백엔드 → dist-python/scriptorium-backend
 npm run build:mac:app           # Electron .app → dist/mac/
 ```
 

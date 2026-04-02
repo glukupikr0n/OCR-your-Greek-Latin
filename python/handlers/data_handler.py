@@ -102,7 +102,7 @@ class DataDownloadHandler:
         params: {corpus_ids: [...], output_dir: str}
         """
         corpus_ids = params.get('corpus_ids', [])
-        output_dir = params.get('output_dir', os.path.expanduser('~/guru-corpus'))
+        output_dir = params.get('output_dir', os.path.expanduser('~/scriptorium-corpus'))
         os.makedirs(output_dir, exist_ok=True)
 
         results = {}

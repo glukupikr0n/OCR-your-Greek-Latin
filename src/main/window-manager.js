@@ -15,7 +15,7 @@ class WindowManager {
       height: 800,
       minWidth: 900,
       minHeight: 600,
-      title: 'Guru',
+      title: 'Scriptorium',
       titleBarStyle: isMac ? 'hiddenInset' : 'default',
       trafficLightPosition: isMac ? { x: 12, y: 10 } : undefined,
       webPreferences: {
