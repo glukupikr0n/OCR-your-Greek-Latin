@@ -136,7 +136,7 @@ class PythonManager {
     const devScriptPath = path.join(__dirname, '../../../python/main.py')
 
     // 1. PyInstaller standalone binary (production .app)
-    const bundledBin = path.join(resourcesBase, 'guru-backend')
+    const bundledBin = path.join(resourcesBase, 'scriptorium-backend')
     if (fs.existsSync(bundledBin)) {
       try { fs.chmodSync(bundledBin, '755') } catch (_) {}
       return { exe: bundledBin, args: [] }

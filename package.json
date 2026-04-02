@@ -48,15 +48,15 @@
         "filter": ["**/*", "!tests/**/*"]
       },
       {
-        "from": "dist-python/guru-backend",
-        "to": "guru-backend"
+        "from": "dist-python/scriptorium-backend",
+        "to": "scriptorium-backend"
       }
     ],
     "fileAssociations": [
       {
         "ext": "pdf",
         "name": "PDF Document",
-        "description": "Open PDF with Guru OCR",
+        "description": "Open PDF with Scriptorium OCR",
         "role": "Viewer"
       }
     ],
