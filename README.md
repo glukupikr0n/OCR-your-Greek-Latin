@@ -82,6 +82,21 @@ tests/               JavaScript 테스트 (unit + e2e)
 
 ## 시작하기 / Quick Start
 
+### 한 번에 클론 → .app 빌드 (macOS)
+
+터미널에 아래를 그대로 붙여넣으면 클론부터 `.app` 패키징까지 한 번에 완료됩니다.
+
+```bash
+git clone https://github.com/glukupikr0n/OCR-your-Greek-Latin.git \
+  && cd OCR-your-Greek-Latin \
+  && ./scripts/install-mac.sh \
+  && ./scripts/build-mac-app.sh
+```
+
+> 완료 후 `dist/mac/` 디렉토리에 `.app` 파일이 생성됩니다. 드래그해서 `/Applications`로 옮기면 끝.
+
+### 개발 모드 실행 / Dev mode
+
 ```bash
 git clone https://github.com/glukupikr0n/OCR-your-Greek-Latin.git
 cd OCR-your-Greek-Latin
