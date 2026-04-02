@@ -87,8 +87,8 @@ tests/               JavaScript 테스트 (unit + e2e)
 터미널에 아래를 그대로 붙여넣으면 클론부터 `.app` 패키징까지 한 번에 완료됩니다.
 
 ```bash
-[ -d OCR-your-Greek-Latin ] || git clone https://github.com/glukupikr0n/OCR-your-Greek-Latin.git
-cd OCR-your-Greek-Latin
+[ -d OCR-your-Greek-Latin ] || [ -f scripts/install-mac.sh ] || git clone https://github.com/glukupikr0n/OCR-your-Greek-Latin.git
+[ -f scripts/install-mac.sh ] || cd OCR-your-Greek-Latin
 ./scripts/install-mac.sh && ./scripts/build-mac-app.sh
 ```
 
@@ -97,8 +97,8 @@ cd OCR-your-Greek-Latin
 ### 개발 모드 실행 / Dev mode
 
 ```bash
-[ -d OCR-your-Greek-Latin ] || git clone https://github.com/glukupikr0n/OCR-your-Greek-Latin.git
-cd OCR-your-Greek-Latin
+[ -d OCR-your-Greek-Latin ] || [ -f scripts/install-mac.sh ] || git clone https://github.com/glukupikr0n/OCR-your-Greek-Latin.git
+[ -f scripts/install-mac.sh ] || cd OCR-your-Greek-Latin
 ./scripts/install-mac.sh   # macOS
 # ./scripts/install-linux.sh  # Linux
 npm start
