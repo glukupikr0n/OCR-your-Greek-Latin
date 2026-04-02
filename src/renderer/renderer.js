@@ -240,9 +240,17 @@ app.onMenuCommand((cmd) => {
 // System ready / error
 app.onSystemReady((info) => {
   if (!info.ready) {
-    const missing = info.languages?.missing?.join(', ') || ''
-    showBanner(t('system-missing-langs', { langs: missing }), 'warning')
-    appendLog(`Warning: missing language data — ${missing}`, 'warn')
+    if (!info.tesseract?.found) {
+      showBanner(t('system-no-tesseract'), 'warning')
+      appendLog('Warning: Tesseract not found', 'warn')
+    } else if (!info.poppler?.found) {
+      showBanner(t('system-no-poppler'), 'warning')
+      appendLog('Warning: Poppler not found', 'warn')
+    } else {
+      const missing = info.languages?.missing?.join(', ') || ''
+      showBanner(t('system-missing-langs', { langs: missing }), 'warning')
+      appendLog(`Warning: missing language data — ${missing}`, 'warn')
+    }
   } else {
     appendLog('Backend ready.', 'success')
   }

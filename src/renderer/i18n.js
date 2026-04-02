@@ -97,6 +97,8 @@ export const STRINGS = {
     'page-indicator': '페이지',
 
     // 시스템
+    'system-no-tesseract': 'Tesseract가 설치되지 않았습니다. install-mac.sh를 실행하세요.',
+    'system-no-poppler': 'Poppler가 설치되지 않았습니다. install-mac.sh를 실행하세요.',
     'system-missing-langs': '누락된 Tesseract 언어팩: {langs}. install-mac.sh를 실행하세요.',
     'system-backend-error': '백엔드 오류: {msg}',
 
@@ -196,6 +198,8 @@ export const STRINGS = {
     'preview-placeholder': 'Open a PDF to see a preview',
     'page-indicator': 'Page',
 
+    'system-no-tesseract': 'Tesseract is not installed. Run install-mac.sh.',
+    'system-no-poppler': 'Poppler is not installed. Run install-mac.sh.',
     'system-missing-langs': 'Missing Tesseract language data: {langs}. Run install-mac.sh.',
     'system-backend-error': 'Backend error: {msg}',
 
