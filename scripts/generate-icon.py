@@ -1,5 +1,5 @@
 """
-Generate app icon: blue circular background with gold Greek Gamma (Γ) centered.
+Generate app icon: dark charcoal circular background with silver Greek Sigma (Σ) centered.
 Outputs assets/icon.png (1024×1024) and assets/icon.ico (256×256).
 
 Usage: python3 scripts/generate-icon.py
@@ -25,9 +25,9 @@ SIZE = 1024
 MARGIN_FRAC = 0.08
 
 # Colors
-BLUE_BG    = (20, 40, 100)      # navy blue
-GOLD_TEXT  = (255, 210, 60)     # gold
-WHITE_RING = (255, 255, 255)    # thin ring around circle
+CHARCOAL_BG = (40, 40, 40)      # dark charcoal
+SILVER_TEXT = (196, 189, 178)    # warm silver
+STONE_RING = (100, 96, 90)      # stone gray ring
 
 
 def make_icon(size: int) -> Image.Image:
@@ -38,14 +38,14 @@ def make_icon(size: int) -> Image.Image:
     margin = int(size * MARGIN_FRAC)
     r = cx - margin
 
-    # Outer white ring
-    draw.ellipse([cx - r - 6, cy - r - 6, cx + r + 6, cy + r + 6], fill=WHITE_RING + (255,))
+    # Outer stone ring
+    draw.ellipse([cx - r - 6, cy - r - 6, cx + r + 6, cy + r + 6], fill=STONE_RING + (255,))
 
-    # Blue circle
-    draw.ellipse([cx - r, cy - r, cx + r, cy + r], fill=BLUE_BG + (255,))
+    # Charcoal circle
+    draw.ellipse([cx - r, cy - r, cx + r, cy + r], fill=CHARCOAL_BG + (255,))
 
-    # Draw Γ (capital Greek Gamma, U+0393)
-    gamma_char = "Γ"
+    # Draw Σ (capital Greek Sigma, U+03A3)
+    gamma_char = "Σ"
     font_size = int(size * 0.64)
 
     # Try to find a suitable font with Greek support
@@ -82,11 +82,11 @@ def make_icon(size: int) -> Image.Image:
     x = cx - text_w // 2 - bbox[0]
     y = cy - text_h // 2 - bbox[1]
 
-    # Draw gold Gamma with slight shadow for depth
+    # Draw silver Sigma with slight shadow for depth
     shadow_offset = max(2, size // 80)
     draw.text((x + shadow_offset, y + shadow_offset), gamma_char, font=font,
-              fill=(100, 70, 0, 180))
-    draw.text((x, y), gamma_char, font=font, fill=GOLD_TEXT + (255,))
+              fill=(60, 58, 54, 180))
+    draw.text((x, y), gamma_char, font=font, fill=SILVER_TEXT + (255,))
 
     return img
 

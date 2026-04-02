@@ -42,7 +42,7 @@ A desktop OCR application for converting scanned PDFs and images into fully sear
 
 | 레이어 | 기술 |
 |---|---|
-| 프론트엔드 | Electron 33, JavaScript (ES modules), HTML/CSS |
+| 프론트엔드 | Electron 33, JavaScript (ES modules), HTML/CSS (클래식 회색 톤 테마) |
 | 백엔드 | Python 3.10+ |
 | OCR 엔진 | Tesseract (pytesseract) |
 | PDF 처리 | pikepdf, pdf2image (Poppler) |
@@ -71,7 +71,7 @@ assets/              앱 아이콘 (icon.png, icon.ico, icon.icns)
 scripts/
   install-mac.sh     macOS 의존성 + tessdata 설치
   install-linux.sh   Linux 의존성 설치
-  generate-icon.py   아이콘 생성 (Pillow)
+  generate-icon.py   앱 아이콘 생성 — 차콜 배경 + 실버 Σ (Pillow)
   build-icns.sh      icon.png → icon.icns 변환 (macOS)
   bundle-python.sh   PyInstaller로 Python 백엔드 번들 (guru-backend)
   build-mac-app.sh   macOS .app 전체 빌드 자동화

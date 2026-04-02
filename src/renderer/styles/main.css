@@ -1,14 +1,14 @@
 :root {
-  --bg: #1e1e2e;
-  --surface: #27273a;
-  --surface2: #313145;
-  --border: #44445a;
-  --text: #cdd6f4;
-  --text-muted: #9399b2;
-  --accent: #89b4fa;
-  --success: #a6e3a1;
-  --danger: #f38ba8;
-  --warning: #f9e2af;
+  --bg: #1c1c1c;
+  --surface: #262626;
+  --surface2: #323232;
+  --border: #484848;
+  --text: #d4d0ca;
+  --text-muted: #908c86;
+  --accent: #c4bdb2;
+  --success: #8fad8a;
+  --danger: #c47a7a;
+  --warning: #c9b87a;
   --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --radius: 6px;
 }
@@ -63,7 +63,7 @@ html, body {
   padding: 6px 16px;
   font-size: 12px;
   background: var(--warning);
-  color: #1e1e2e;
+  color: #1c1c1c;
   text-align: center;
 }
 
@@ -165,9 +165,9 @@ section h3 {
   cursor: not-allowed;
 }
 
-.btn-primary { background: var(--accent); color: #1e1e2e; }
-.btn-success { background: var(--success); color: #1e1e2e; }
-.btn-danger  { background: var(--danger);  color: #1e1e2e; }
+.btn-primary { background: var(--accent); color: #1c1c1c; }
+.btn-success { background: var(--success); color: #1c1c1c; }
+.btn-danger  { background: var(--danger);  color: #1c1c1c; }
 .btn-secondary {
   background: var(--surface2);
   color: var(--text);
